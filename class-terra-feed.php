@@ -21,7 +21,9 @@ namespace Nine3;
  */
 class Terra_Feed extends Terra {
 	/**
-	 * Blag
+	 * The utils object
+	 *
+	 * @var object
 	 */
 	public $utils;
 
@@ -35,7 +37,7 @@ class Terra_Feed extends Terra {
 		// Load utils.
 		$this->utils = new Terra_Utils();
 
-		// TODO: optional parameters for template names etc.
+		// TODO: optional parameters for template names, taxonomies, etc.
 	}
 
 	/**
@@ -62,11 +64,11 @@ class Terra_Feed extends Terra {
 		if ( is_null( $query ) ) {
 			$query = $wp_query;
 		}
-		$this->current_query = $query;
+		parent::$current_query = $query;
 
 		// Create a unique ID for the query.
 		// Used later for temp storage.
-		$this->unique_id = spl_object_hash( $query );
+		parent::$unique_id = spl_object_hash( $query );
 
 		// Are there more items to be loaded?
 		$count        = isset( $query->posts ) ? count( $query->posts ) : 0;
@@ -87,7 +89,7 @@ class Terra_Feed extends Terra {
 
 		// Build the form element.
 		// We need the data attribute for the AJAX request.
-		$uid = $this->unique_id;
+		$uid = parent::$unique_id;
 		printf(
 			'<form id="filters" name="%s" action="%s" method="get" class="%s" data-uid="%s">',
 			esc_attr( $name ),

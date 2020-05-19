@@ -26,14 +26,14 @@ class Terra {
 	 *
 	 * @var WP_Query
 	 */
-	protected $current_query;
+	protected static $current_query;
 
 	/**
 	 * The unique id to identify the current query.
 	 *
 	 * @var string
 	 */
-	protected $unique_id = null;
+	protected static $unique_id = null;
 
 	/**
 	 * Current query offset stored as need to be added after the closing tag.
@@ -111,6 +111,6 @@ class Terra {
 	 * @param mixed $property The property to return, regardless of its visibility.
 	 */
 	public function __get( $property ) {
-		return $property;
+		return $this->$property;
 	}
 }

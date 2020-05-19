@@ -9,6 +9,11 @@ namespace Nine3;
 
 /**
  * Functions include:
+ * - add_search_filter()
+ * - add_taxonomy_filter()
+ * - add_dropdown_filter()
+ * - add_custom_style_filter()
+ * - add_radio_or_checkbox_filter()
  */
 class Terra_Utils extends Terra {
 	/**
@@ -305,9 +310,11 @@ class Terra_Utils extends Terra {
 	 */
 	public function add_radio_or_checkbox_filter( $args, $type ) {
 		// TODO: double check everything.
-		global $wp_query;
-		$this->current_query = $wp_query;
-		// var_dump( $this->unique_id );
+		// global $wp_query;
+		// parent::$current_query = $wp_query;
+
+		// var_dump( parent::$current_query );
+
 		$name           = $args['name'];
 		$class          = $args['class'];
 		$values         = $args['values'];
@@ -326,7 +333,7 @@ class Terra_Utils extends Terra {
 		if ( isset( $_GET[ $filter_name ] ) ) {
 			$selected = sanitize_title( wp_unslash( $_GET[ $filter_name ] ) );
 		} else {
-			$tax_query = $this->current_query->get( 'tax_query' );
+			$tax_query = parent::$current_query->get( 'tax_query' );
 
 			if ( ! empty( $tax_query ) ) {
 				$selected = [];

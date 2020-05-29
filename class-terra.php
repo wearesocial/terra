@@ -58,7 +58,7 @@ class Terra {
 	 * Initialise feed object
 	 */
 	public function create_feed() {
-		$feed = new \Nine3\Terra_Feed();
+		return new \Nine3\Terra_Feed();
 	}
 
 	/**

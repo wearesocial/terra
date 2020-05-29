@@ -25,14 +25,14 @@ class Terra_Feed {
 	 *
 	 * @var WP_Query
 	 */
-	protected static $current_query;
+	protected $current_query;
 
 	/**
 	 * The unique id to identify the current query.
 	 *
 	 * @var string
 	 */
-	protected static $unique_id = null;
+	protected $unique_id = null;
 
 	/**
 	 * Current query offset stored as need to be added after the closing tag.
@@ -79,7 +79,6 @@ class Terra_Feed {
 	public function __construct() {
 		// Include the terra.js script.
 		wp_enqueue_script( 'stella-terra' );
-		echo 'asd';
 
 		// Load utils.
 		// $this->utils = new Terra_Utils();
@@ -111,11 +110,11 @@ class Terra_Feed {
 		if ( is_null( $query ) ) {
 			$query = $wp_query;
 		}
-		parent::$current_query = $query;
+		$this->current_query = $query;
 
 		// Create a unique ID for the query.
 		// Used later for temp storage.
-		parent::$unique_id = spl_object_hash( $query );
+		$this->unique_id = spl_object_hash( $query );
 
 		// Are there more items to be loaded?
 		$count        = isset( $query->posts ) ? count( $query->posts ) : 0;
@@ -136,7 +135,7 @@ class Terra_Feed {
 
 		// Build the form element.
 		// We need the data attribute for the AJAX request.
-		$uid = parent::$unique_id;
+		$uid = $this->unique_id;
 		printf(
 			'<form id="filters" name="%s" action="%s" method="get" class="%s" data-uid="%s">',
 			esc_attr( $name ),

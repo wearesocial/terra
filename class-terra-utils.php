@@ -310,8 +310,8 @@ class Terra_Utils {
 	 */
 	public function add_radio_or_checkbox_filter( $args, $type ) {
 		// TODO: double check everything.
-		// global $wp_query;
-		// parent::$current_query = $wp_query;
+		global $wp_query;
+		$current_query = $wp_query;
 
 		// var_dump( parent::$unique_id );
 
@@ -333,7 +333,7 @@ class Terra_Utils {
 		if ( isset( $_GET[ $filter_name ] ) ) {
 			$selected = sanitize_title( wp_unslash( $_GET[ $filter_name ] ) );
 		} else {
-			$tax_query = parent::$current_query->get( 'tax_query' );
+			$tax_query = $current_query->get( 'tax_query' );
 
 			if ( ! empty( $tax_query ) ) {
 				$selected = [];

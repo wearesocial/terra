@@ -19,7 +19,53 @@ namespace Nine3;
  * - hidden_terra_field()
  * - generate_hidden_fields()
  */
-class Terra_Feed extends Terra {
+class Terra_Feed {
+	/**
+	 * $query var used in start()
+	 *
+	 * @var WP_Query
+	 */
+	protected static $current_query;
+
+	/**
+	 * The unique id to identify the current query.
+	 *
+	 * @var string
+	 */
+	protected static $unique_id = null;
+
+	/**
+	 * Current query offset stored as need to be added after the closing tag.
+	 *
+	 * @var int
+	 */
+	protected $offset = 0;
+
+	/**
+	 * The current form name.
+	 *
+	 * @var string
+	 */
+	protected $current_name = null;
+
+	/**
+	 * Array to be saved in the temp file.
+	 *
+	 * This array stores the query data needed by Terra to work properly
+	 *
+	 * @var array
+	 */
+	protected $temp_args = [];
+
+	/**
+	 * Array to be saved in the temp file.
+	 *
+	 * This array stores the internal Terra parameters.
+	 *
+	 * @var array
+	 */
+	protected $temp_terra = [];
+
 	/**
 	 * The utils object
 	 *
@@ -33,9 +79,10 @@ class Terra_Feed extends Terra {
 	public function __construct() {
 		// Include the terra.js script.
 		wp_enqueue_script( 'stella-terra' );
+		echo 'asd';
 
 		// Load utils.
-		$this->utils = new Terra_Utils();
+		// $this->utils = new Terra_Utils();
 
 		// TODO: optional parameters for template names, taxonomies, etc.
 	}

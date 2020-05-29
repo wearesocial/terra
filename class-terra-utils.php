@@ -15,7 +15,7 @@ namespace Nine3;
  * - add_custom_style_filter()
  * - add_radio_or_checkbox_filter()
  */
-class Terra_Utils extends Terra {
+class Terra_Utils {
 	/**
 	 * Add a search input field with the data-filter attribute
 	 *
@@ -313,7 +313,7 @@ class Terra_Utils extends Terra {
 		// global $wp_query;
 		// parent::$current_query = $wp_query;
 
-		var_dump( parent::$unique_id );
+		// var_dump( parent::$unique_id );
 
 		$name           = $args['name'];
 		$class          = $args['class'];

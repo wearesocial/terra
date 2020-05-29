@@ -22,62 +22,12 @@ class Terra {
 	private $develop;
 
 	/**
-	 * $query var used in start()
-	 *
-	 * @var WP_Query
-	 */
-	protected static $current_query;
-
-	/**
-	 * The unique id to identify the current query.
-	 *
-	 * @var string
-	 */
-	protected static $unique_id = null;
-
-	/**
-	 * Current query offset stored as need to be added after the closing tag.
-	 *
-	 * @var int
-	 */
-	protected $offset = 0;
-
-	/**
-	 * The current form name.
-	 *
-	 * @var string
-	 */
-	protected $current_name = null;
-
-	/**
-	 * Array to be saved in the temp file.
-	 *
-	 * This array stores the query data needed by Terra to work properly
-	 *
-	 * @var array
-	 */
-	protected $temp_args = [];
-
-	/**
-	 * Array to be saved in the temp file.
-	 *
-	 * This array stores the internal Terra parameters.
-	 *
-	 * @var array
-	 */
-	protected $temp_terra = [];
-
-	/**
 	 * Initialise.
 	 *
 	 * @param bool $develop true if debug.
 	 */
 	public function __construct( $develop = false ) {
 		$this->develop = $develop;
-
-		// Require subclasses.
-		require_once 'class-terra-feed.php';
-		require_once 'class-terra-utils.php';
 
 		// Enqueue the JS script.
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_script' ] );
@@ -102,6 +52,13 @@ class Terra {
 		);
 
 		wp_localize_script( 'stella-terra', 'terra', $data );
+	}
+
+	/**
+	 * Initialise feed object
+	 */
+	public function create_feed() {
+		$feed = new \Nine3\Terra_Feed();
 	}
 
 	/**

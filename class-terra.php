@@ -63,7 +63,6 @@ class Terra {
 
 	/**
 	 * Allows read-only access to private properties.
-	 * Cheers Matt.
 	 *
 	 * @param mixed $property The property to return, regardless of its visibility.
 	 */

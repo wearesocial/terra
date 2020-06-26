@@ -76,14 +76,25 @@ class Terra_Feed {
 	/**
 	 * Initialise and enqueue the terra script.
 	 */
-	public function __construct() {
+	public function __construct( $start = false, $options = null ) {
 		// Include the terra.js script.
 		wp_enqueue_script( 'stella-terra' );
 
 		// Load utils.
-		// $this->utils = new Terra_Utils();
+		$this->utils = new Terra_Utils();
+
+		// If start is true create start() method.
+		if ( $start && isset( $options ) && is_array( $options ) ) {
+			$this->start( $options['name'], $options['class'], $options['query'] );
+		}
 
 		// TODO: optional parameters for template names, taxonomies, etc.
+	}
+
+	/**
+	 * Parse the data sent via $_POST and so loads the new posts to be loaded.
+	 */
+	public static function load_more() {
 	}
 
 	/**
@@ -336,8 +347,6 @@ class Terra_Feed {
 			}
 
 			$this->hidden_terra_field( 'tax_query', $tax_to_apply );
-			// TODO: check these fields (3rd parameter).
-			// $this->hidden_terra_field( 'tax_query', $tax_to_apply, 'query-' );
 		}
 
 		/**

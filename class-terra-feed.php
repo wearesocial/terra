@@ -10,6 +10,7 @@ namespace Nine3;
 /**
  * Functions include:
  * - __construct()
+ * - load_more()
  * - start()
  * - container_start()
  * - container_end()
@@ -18,6 +19,7 @@ namespace Nine3;
  * - hidden_query_field()
  * - hidden_terra_field()
  * - generate_hidden_fields()
+ * - get_temp_data()
  */
 class Terra_Feed {
 	/**
@@ -89,12 +91,210 @@ class Terra_Feed {
 		}
 
 		// TODO: optional parameters for template names, taxonomies, etc.
+		// TODO: Polylang?
 	}
 
 	/**
-	 * Parse the data sent via $_POST and so loads the new posts to be loaded.
+	 * Parse the data sent via $_POST and so loads the new posts.
 	 */
 	public static function load_more() {
+		check_ajax_referer( 'terra', 'nonce' );
+
+		if ( ! isset( $_POST['terraFilter'] ) ) {
+			die( -1 );
+		}
+
+		// Terra has been initialised.
+		do_action( 'terra_init' );
+
+		// The form name (used for the filters).
+		$name               = sanitize_title( wp_unslash( $_POST['terraName'] ) );
+		$this->current_name = $name;
+
+		// Allow to run some action for a specific filter only.
+		do_action( 'terra_init__' . $name );
+
+		// The WP_Query arguments.
+		$params = [];
+
+		if ( isset( $_POST['params'] ) ) {
+			$post_data = wp_unslash( $_POST['params'] );
+			parse_str( $post_data, $params );
+			unset( $params['query'] );
+		}
+
+		// Build the WP_Query $args parameters.
+		$args = [
+			'post_status' => 'publish',
+		];
+
+		// Load the temp file generated with the "hidden" settings.
+		$query_args                 = [];
+		$terra                      = []; // Internal parameters.
+		list( $query_args, $terra ) = $this->get_temp_data();
+
+		if ( is_array( $query_args ) ) {
+			$args = array_merge( $args, $query_args );
+		}
+
+		foreach ( $params as $key => $param ) {
+			if ( stripos( $key, 'terra-' ) === 0 ) {
+				$key = str_replace( 'terra-', '', $key );
+
+				$terra[ $key ] = $param;
+			} elseif ( is_array( $param ) ) {
+				continue;
+			} else {
+				$params[ $key ] = maybe_unserialize( $param );
+			}
+		}
+
+		$this->utils->debug( 'FORM NAME: ' . $this->$current_name );
+		$this->utils->debug( 'Params received:' );
+		$this->utils->debug( $params );
+
+		$args = $this->filter_wp_query( $args, $params );
+		// TODO.
+
+		if ( empty( $params['filter-search'] ) ) {
+			$this->utils->debug( 'SEARCH EMPTY' );
+			unset( $args['s'] );
+		}
+
+		// Lets us modify the args for each form.
+		$args = apply_filters( 'terra_args__' . $name, $args, $params, $terra );
+
+		$this->utils->debug( 'WP_Query arguments applied:' );
+		$this->utils->debug( $args );
+
+		// WP_Query run.
+		$posts     = [];
+		$post_type = $args['post_type'] ?? 'post';
+
+		if ( ! empty( $args ) ) {
+			$posts = new \WP_Query( $args );
+
+			$this->utils->debug( $posts->request, '(SQL) ' );
+
+			$this->current_query = $posts;
+
+			// TODO: Apply tax terms to disable/hide on front end.
+			// TODO: Need post type and taxonomies from either start() method.
+			if ( $post_type === 'post' ) {
+				$tax_terms = [];
+				$args['posts_per_page'] = -1;
+				$filter_posts = new \WP_Query( $args );
+
+				$post_ids = wp_list_pluck( $filter_posts->posts, 'ID' );
+
+				foreach ( $post_ids as $post_id ) {
+					// This is custom functionality to compile a list of all taxonomy terms for each post.
+					// This is later used in terra.js to disable dropdown options.
+					$filter_tax = [
+						'persona',
+						'topic',
+						'resource-type',
+					];
+
+					if ( ! empty( $filter_tax ) ) {
+						foreach ( $filter_tax as $ftx ) {
+							$all_tax_obj[] = get_the_terms( $post_id, $ftx );
+						}
+					}
+
+					if ( is_array( $all_tax_obj ) || is_object( $all_tax_obj ) ) {
+						foreach ( $all_tax_obj as $tax_obj ) {
+							foreach ( $tax_obj as $single_tax ) {
+								if ( ! in_array( $single_tax->slug, $tax_terms, true ) ) {
+									array_push( $tax_terms, $single_tax->slug );
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Allow 3rd party to inject HTML before the terra's loop.
+		do_action( 'terra_before_loop__' . $name, $posts, $args, $params );
+
+		/**
+		 * By default we're looking for the following file name:
+		 * -> template-parts/[post-type]-single-item.php
+		 * or
+		 * -> template-parts/[post-type]-single-item-none.php
+		 * if there are no results.
+		 *
+		 * The default file name can be overriden using terra_template__[name] filter.
+		 * TODO: Allow names to be passed from start().
+		 */
+		if ( ( method_exists( $posts, 'have_posts' ) ) ) {
+			if ( $posts->have_posts() ) {
+				$count = 0;
+				while ( $posts->have_posts() ) {
+					$posts->the_post();
+
+					$post_type = get_post_type( get_the_ID() );
+
+					$template = apply_filters( 'terra_template__' . $name, 'template-parts/' . $post_type . '-single-item', $post_type, $args );
+
+					$this->utils->debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
+
+					if ( $post_type !== null ) {
+						get_template_part( $template );
+					}
+					$count++;
+				}
+			} else {
+				$template = apply_filters( 'terra_template__' . $name . '_none', 'template-parts/' . $post_type . '-single-item-none', $post_type, $args );
+
+				$this->utils->debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
+
+				if ( $post_type !== null ) {
+					get_template_part( $template );
+				}
+			}
+		}
+
+		if ( is_array( $args ) ) {
+			$found      = intval( $posts->found_posts );
+			$post_count = intval( $posts->post_count );
+
+			// Let's put back the custom pagination.
+			if ( isset( $terra['pagination'] ) ) {
+				// TODO: add method in utils.
+				$this->utils->pagination( $posts, true, $terra );
+			}
+
+			// Need to show the # of posts found?
+			if ( isset( $terra['posts-found'] ) ) {
+				// TODO: add method in utils.
+				$this->utils->posts_found( $terra['posts-found-single'], $terra['posts-found-plural'] );
+			}
+		}
+
+		// User can add some extra HTML after the loop, like pagination, etc.
+		do_action( 'terra_after_loop__' . $name, $posts, $args, $params );
+
+		// Lets add custom HTML tags for later use with terra.js.
+		if ( isset( $found ) ) {
+			$offset       = intval( $args['offset'] ?? 0 );
+			$terra_offset = $offset + $post_count;
+
+			printf( '<terra-posts-count>%d</terra-posts-count>', (int) $post_count );
+			printf( '<terra-offset>%d</terra-offset>', (int) $terra_offset );
+			printf( '<terra-found>%d</terra-found>', (int) $found );
+		}
+
+		// TODO: taxonomies stuff for filters.
+		if ( isset( $tax_terms ) ) {
+			$tax_terms = implode( ',', $tax_terms );
+			printf( '<terra-tax>%s</terra-tax>', $tax_terms );
+		}
+
+		wp_reset_postdata();
+
+		die();
 	}
 
 	/**
@@ -398,5 +598,41 @@ class Terra_Feed {
 		if ( $query->is_main_query() ) {
 			self::hidden_field( 'query', $this->current_name, '' );
 		}
+	}
+
+	/**
+	 * Get the query_args and terra_args data stored in the temp file
+	 *
+	 * @return array
+	 */
+	private function get_temp_data() {
+		$uid    = sanitize_title( $_POST['uid'] );
+		$return = [ [], [] ];
+
+		$this->utils->debug( 'UID: ' . $uid );
+		$this->utils->debug( $_POST, '$_POST: ' );
+
+		// Nothing to do here.
+		if ( empty( $uid ) ) {
+			return $return;
+		}
+
+		// Save the "temp" data.
+		$temp_file = trailingslashit( sys_get_temp_dir() ) . 'terra-' . $uid;
+		if ( ! file_exists( $temp_file ) ) {
+			$this->utils->debug( 'TERRA: cannot load temp file!' );
+
+			do_action( 'terra_temp_failed' );
+
+			return $return;
+		}
+
+		include $temp_file;
+
+		$this->utils->debug( 'Parameters loaded' );
+		$this->utils->debug( $query_args, '($query_args) ' );
+		$this->utils->debug( $terra_args, '($terra_args) ' );
+
+		return [ $query_args, $terra_args ];
 	}
 }

@@ -33,6 +33,18 @@ class Terra {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_script' ] );
 
 		// TODO: wp_ajax actions.
+
+		// TODO: Register blocks.
+		// Add block category.
+		add_filter( 'block_categories', [ $this, 'terra_block_category' ], 10, 2 );
+
+		// Check if function exists and hook into setup.
+		if ( function_exists( 'acf_register_block_type' ) ) {
+			add_action( 'acf/init', [ $this, 'terra_register_acf_block_types' ] );
+		}
+
+		// Allowed blocks.
+		// add_filter( 'allowed_block_types', [ $this, 'terra_allowed_block_types' ], 10, 2 );
 	}
 
 	/**
@@ -68,5 +80,54 @@ class Terra {
 	 */
 	public function __get( $property ) {
 		return $this->$property;
+	}
+
+	/**
+	 * Register ACF Block Category.
+	 *
+	 * @param array  $categories our block categories.
+	 * @param object $post our post object.
+	 */
+	public function terra_block_category( $categories, $post ) {
+		return array_merge(
+			$categories,
+			[
+				[
+					'slug'  => 'terra-blocks',
+					'title' => __( 'Terra', 'stella' ),
+				],
+			]
+		);
+	}
+
+	/**
+	 * Register ACF Block.
+	 */
+	public function terra_register_acf_block_types() {
+		acf_register_block_type(
+			[
+				'name'            => 'terra-feed',
+				'title'           => __( 'Terra Feed' ),
+				'description'     => __( 'A feed of posts to display.' ),
+				'render_template' => __DIR__ . '/templates/feed-block.php',
+				'category'        => 'terra-blocks',
+				'icon'            => 'align-right',
+				'keywords'        => [ 'terra', 'filter', 'block' ],
+				'post_types'      => [ 'page' ],
+				'supports'        => [
+					'mode'     => false,
+					'align'    => false,
+					'multiple' => true,
+				],
+			]
+		);
+	}
+
+	/**
+	 * Allowed theme block types.
+	 */
+	public function terra_allowed_block_types( $block_types, $post ) {
+		$return = array_push( $block_types, 'acf/terra-feed' );
+		return $return;
 	}
 }

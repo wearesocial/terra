@@ -437,4 +437,25 @@ class Terra_Utils {
 			echo '</div>';
 		}
 	}
+
+	/**
+	 * Show debug message, if WP_DEBUG is defined and enabled.
+	 *
+	 * @param mixed  $message the log message. It will be converted in string using the print_r function.
+	 * @param string $prefix string to prefix the log with.
+	 * @return void
+	 */
+	public function debug( $message, $prefix = '' ) {
+		$log = 'TERRA: ' . $prefix . print_r( $message, true );
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( $log );
+		} elseif ( defined( 'TERRA_DEBUG' ) && TERRA_DEBUG ) {
+			if ( is_string( $log ) ) {
+				$log = date( 'Y-m-d H:i:s: ' ) . $log;
+			}
+
+			file_put_contents( ABSPATH . '/wp-content/terra.log', $log . PHP_EOL, FILE_APPEND );
+		}
+	}
 }

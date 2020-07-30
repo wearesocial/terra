@@ -33,18 +33,6 @@ class Terra {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_script' ] );
 
 		// TODO: wp_ajax actions.
-
-		// TODO: Register blocks.
-		// Add block category.
-		add_filter( 'block_categories', [ $this, 'terra_block_category' ], 10, 2 );
-
-		// Check if function exists and hook into setup.
-		if ( function_exists( 'acf_register_block_type' ) ) {
-			add_action( 'acf/init', [ $this, 'terra_register_acf_block_types' ] );
-		}
-
-		// Allowed blocks.
-		// add_filter( 'allowed_block_types', [ $this, 'terra_allowed_block_types' ], 10, 2 );
 	}
 
 	/**

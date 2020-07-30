@@ -9,13 +9,37 @@ namespace Nine3;
 
 /**
  * Functions include:
+ * - __construct()
  * - add_search_filter()
  * - add_taxonomy_filter()
  * - add_dropdown_filter()
  * - add_custom_style_filter()
  * - add_radio_or_checkbox_filter()
+ * - pagination()
+ * - debug()
  */
 class Terra_Utils {
+	/**
+	 * $query the current query passed from terra feed.
+	 *
+	 * @var WP_Query
+	 */
+	protected $current_query;
+
+	/**
+	 * Sets up the $current_query var for later
+	 *
+	 * @param WP_Query $query the current query from terra feed.
+	 */
+	public function __construct( $query = false ) {
+		if ( $query ) {
+			$this->current_query = $query;
+		} else {
+			global $wp_query;
+			$this->current_query = $wp_query;
+		}
+	}
+
 	/**
 	 * Add a search input field with the data-filter attribute
 	 *
@@ -106,7 +130,7 @@ class Terra_Utils {
 			'placeholder'     => '',
 			'clearable'       => true,
 			'class'           => '',
-			'custom-style'    => true,
+			'custom-style'    => false,
 			'multiple'        => false,
 			'icon'            => '',
 			'button-type'     => 'submit',
@@ -145,16 +169,18 @@ class Terra_Utils {
 		$filter_name = sprintf( '%s-%s', $filter, $name );
 
 		// Add selected parameter.
-		// TODO: undocumented.
+		// This allows us to load a page with a pre-seleced term.
 		$custom_selected = $args['selected'];
 
-		// TODO: undocumented (cookies and custom).
+		// Sets the selected term on page load.
 		if ( ! empty( $custom_selected ) ) {
 			$selected = $custom_selected;
 		} else {
 			if ( isset( $_COOKIE[ $filter_name ] ) && ! isset( $_GET[ $filter_name ] ) ) {
+				// If a cookie is set eg: $_COOKIE['filter-category'] it will have priority here.
 				$selected = sanitize_text_field( wp_unslash( $_COOKIE[ $filter_name ] ) );
 			} else if ( isset( $_GET[ $filter_name ] ) ) {
+				// Otherwise the term is set from the $_GET param.
 				$selected = sanitize_text_field( wp_unslash( $_GET[ $filter_name ] ) );
 			} else {
 				$selected = '';
@@ -169,7 +195,6 @@ class Terra_Utils {
 
 		// If not using the custom-style we need to let the JS know about it, as we
 		// need to handle the change event for this element.
-		// TODO: test
 		if ( ! $args['custom-style'] ) {
 			$select_class .= ' default-style';
 		}
@@ -180,12 +205,10 @@ class Terra_Utils {
 			esc_attr( $name ),
 			esc_attr( $name ),
 			esc_attr( $select_class ),
-			$args['multiple'] ? 'multiple' : '' // TODO: ??
+			$args['multiple'] ? 'multiple' : ''
 		);
 
-		/**
-		 * The placeholder, if set, is added as disbaled option.
-		 */
+		// The placeholder, if set, is added as disbaled option.
 		if ( ! empty( $args['placeholder'] ) ) {
 			printf(
 				'<option %s disabled="disabled" style="display: none;">%s</option>',
@@ -217,11 +240,7 @@ class Terra_Utils {
 		}
 		echo '</select>';
 
-		/**
-		 * The <li> tag can't be styles
-		 * http://msdn.microsoft.com/en-us/library/ms535877(v=vs.85).aspx
-		 */
-		// TODO: check this.
+		// Creates a custom wrapper and <li> + <button> tags for a custom select menu.
 		if ( $args['custom-style'] ) {
 			$this->add_custom_style_filter( $name, $args, $selected );
 		}
@@ -233,7 +252,6 @@ class Terra_Utils {
 
 	/**
 	 * Generate the HTML for the custom <select>
-	 * TODO: THIS WHOLE THING. Do we need it??
 	 *
 	 * @param string $name the filter name.
 	 * @param array  $args the filter arguments.
@@ -307,23 +325,18 @@ class Terra_Utils {
 	 *
 	 * @param array  $args arguments.
 	 * @param string $type the filter type: radio/checkbox.
+	 * @throws \Exception If the type parameter is empty.
 	 */
 	public function add_radio_or_checkbox_filter( $args, $type ) {
-		// TODO: double check everything.
-		global $wp_query;
-		$current_query = $wp_query;
-
-		// var_dump( parent::$unique_id );
-
+		$current_query  = $this->current_query;
 		$name           = $args['name'];
 		$class          = $args['class'];
 		$values         = $args['values'];
 		$icon           = $args['icon'] ?? '';
 		$placeholder    = $args['placeholder'] ?? false;
 		$is_meta_filter = $args['is-meta-filter'] ?? false;
-
-		$filter      = $is_meta_filter ? 'meta-' : 'filter-';
-		$filter_name = sprintf( '%s%s', $filter, $name );
+		$filter         = $is_meta_filter ? 'meta-' : 'filter-';
+		$filter_name    = sprintf( '%s%s', $filter, $name );
 
 		/**
 		 * Check if the field is present in the $current_query as taxonomy or meta field
@@ -373,6 +386,7 @@ class Terra_Utils {
 			echo '<div class="' . $args['container_class'] . '">';
 		}
 
+		// Add data-luna-toggle div.
 		if ( isset( $args['toggle'] ) ) {
 			echo '<div class="checkbox-trigger" data-luna-toggle="' . $args['toggle'] . '"></div>';
 		}
@@ -435,6 +449,94 @@ class Terra_Utils {
 
 		if ( isset( $args['container_class'] ) ) {
 			echo '</div>';
+		}
+	}
+
+	/**
+	 * The Custom pagination
+	 *
+	 * @param string   $current_name the name of the current feed.
+	 * @param WP_Query $query the main or custom query.
+	 * @param bool     $show_ends whether to show links to the first and last page (where applicable).
+	 * @param array    $params the pagination options.
+	 * @return void
+	 */
+	public function pagination( $current_name, $query, $show_ends = true, $params = [] ) {
+		global $wp_query, $wp;
+
+		// Needed by the pagination template.
+		global $current_page, $show_ends, $first_page, $args, $total_pages, $last_page;
+
+		$total_pages = $query->max_num_pages;
+		if ( $total_pages < 2 ) {
+			return;
+		}
+
+		$current_page = max( 1, get_query_var( 'paged' ) );
+
+		// Get any custom $_GET params from the url, these will be appended to page links further down.
+		$custom_params = count( $_GET ) > 0 ? '?' . http_build_query( $_GET ) : '';
+
+		// Get the base url of the current archive/taxonomy/whatever page without any pagination queries.
+		if ( isset( $params['base_url'] ) ) {
+			$base_url = $params['base_url'];
+		} else {
+			$base_url = explode( '?', get_pagenum_link( 1 ) )[0];
+		}
+
+		// Get the current filter args from $params, needs to be appended to the base_url.
+		if ( isset( $_POST['params'] ) ) {
+			parse_str( $_POST['params'], $params_array );
+			foreach ( $params_array as $key => $value ) {
+				if (
+					strpos( $key, 'terra-' ) !== false ||
+					empty( $value ) ||
+					stripos( $key, 'query-' ) !== false ||
+					stripos( $key, 'posts-' ) !== false
+				) {
+					unset( $params_array[ $key ] );
+				}
+			}
+			$params_string = http_build_query( $params_array );
+			if ( strpos( $custom_params, '?' ) === 0 ) {
+				$custom_params .= $params_string;
+			} else {
+				$custom_params = '?' . $params_string;
+			}
+		}
+
+		// Current category / taxonomy / archive url for first link.
+		$page_slug = 'page';
+		if ( function_exists( 'pll__' ) ) {
+			$page_slug = pll__( 'page' );
+		}
+
+		$first_page = $base_url . $custom_params;
+		$last_page  = $base_url . $page_slug . '/' . $total_pages . $custom_params;
+
+		$args = [
+			'base'      => $base_url . '%_%' . $custom_params,
+			'format'    => $page_slug . '/%#%',
+			'current'   => $current_page,
+			'total'     => $total_pages,
+			'type'      => 'list',
+			'prev_text' => esc_html( 'Prev', 'stella' ),
+			'next_text' => esc_html( 'Next', 'stella' ),
+		];
+
+		$args = apply_filters( 'terra_pagination_args', $args, $show_ends, $params );
+		$args = apply_filters( 'terra_pagination_args__' . $current_name, $args, $show_ends, $params );
+
+		$terra_template = dirname( __FILE__ ) . '/templates/pagination.php';
+
+		$template = apply_filters( 'terra_pagination_template', $terra_template, $query, $args, $params );
+		$template = apply_filters( 'terra_pagination_template__' . $current_name, $template, $query, $args, $params );
+
+		$this->debug( $args, '(pagination) ' );
+		$this->debug( $template, 'Pagination Template: ' );
+
+		if ( $template ) {
+			include $template;
 		}
 	}
 

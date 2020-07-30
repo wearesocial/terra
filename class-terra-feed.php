@@ -11,14 +11,18 @@ namespace Nine3;
  * Functions include:
  * - __construct()
  * - load_more()
+ * - filter_wp_query()
+ * - pre_get_posts()
+ * - modify_wp_query_args()
  * - start()
  * - container_start()
  * - container_end()
- * - end()
  * - hidden_field()
- * - hidden_query_field()
  * - hidden_terra_field()
+ * - hidden_query_field()
  * - generate_hidden_fields()
+ * - end()
+ * - posts_found()
  * - get_temp_data()
  */
 class Terra_Feed {
@@ -77,13 +81,17 @@ class Terra_Feed {
 
 	/**
 	 * Initialise and enqueue the terra script.
+	 *
+	 * @param bool  $start set to true to run start().
+	 * @param array $options for start().
 	 */
 	public function __construct( $start = false, $options = null ) {
 		// Include the terra.js script.
 		wp_enqueue_script( 'stella-terra' );
 
-		// Load utils.
-		$this->utils = new Terra_Utils();
+		// Load utils and inject query.
+		$query       = isset( $options['query'] ) ? $options['query'] : false;
+		$this->utils = new Terra_Utils( $query );
 
 		// If start is true create start() method.
 		if ( $start && isset( $options ) && is_array( $options ) ) {
@@ -263,13 +271,12 @@ class Terra_Feed {
 			// Let's put back the custom pagination.
 			if ( isset( $terra['pagination'] ) ) {
 				// TODO: add method in utils.
-				$this->utils->pagination( $posts, true, $terra );
+				$this->utils->pagination( $this->$current_name, $posts, true, $terra );
 			}
 
 			// Need to show the # of posts found?
 			if ( isset( $terra['posts-found'] ) ) {
-				// TODO: add method in utils.
-				$this->utils->posts_found( $terra['posts-found-single'], $terra['posts-found-plural'] );
+				$this->posts_found( $terra['posts-found-single'], $terra['posts-found-plural'] );
 			}
 		}
 
@@ -295,6 +302,329 @@ class Terra_Feed {
 		wp_reset_postdata();
 
 		die();
+	}
+
+	/**
+	 * Filter the WP_Query arguments by applying the data received from the URL.
+	 *
+	 * @param array $args array of arguments to pass to WP_Query.
+	 * @param array $params the $_POST data.
+	 */
+	public function filter_wp_query( $args, $params = [] ) {
+		$is_search = isset( $params['filter-search'] ) & ! empty( $params['filter-search'] );
+
+		/**
+		 * To avoid conflict with WP the taxonomy names are prefixed with "filter-"
+		 * While internal parameters are prefixed with 'terra-'
+		 */
+		$terra  = [];
+		$data   = [];
+		$meta   = [];
+		$others = [];
+
+		foreach ( $params as $key => $value ) {
+			$key   = sanitize_text_field( $key );
+			$value = is_array( $value ) ? $value : sanitize_text_field( $value );
+
+			if ( strpos( $key, 'terra-' ) === 0 ) {
+				$key           = str_replace( 'terra-', '', $key );
+				$terra[ $key ] = $value;
+			} elseif ( strpos( $key, 'meta-' ) === 0 ) {
+				$key = str_replace( 'meta-', '', $key );
+
+				/**
+				 * The meta field is always defined when using TERRA's built-in functions.
+				 * So, need to check if the filter needs to be applied.
+				 */
+				if ( empty( $value ) ) {
+					/**
+					 * If the meta value passed is empty, we need to check if it exists in the original
+					 * query and if so we have to remove it!
+					 */
+					$meta_query = $args['meta_query'] ?? [];
+
+					foreach ( $meta_query as $id => $arg ) {
+						if ( $arg['key'] === $key ) {
+							unset( $args['meta_query'][ $id ] );
+						}
+					}
+
+					continue;
+				}
+
+				/**
+				 * Check if the filter is present as a previous $params, if so we need to:
+				 *  - Convert the "value" as array (if is not an array yet)
+				 *  - append it to the list of values
+				 */
+				if ( isset( $meta[ $key ] ) ) {
+					if ( ! is_array( $meta[ $key ]['value'] ) ) {
+						$meta[ $key ]['compare'] = 'IN';
+						$meta[ $key ]['value']   = [ $meta[ $key ]['value'] ];
+					}
+
+					if ( is_array( $value ) ) {
+						foreach ( $value as $val ) {
+							$meta[ $key ]['value'][] = sanitize_title( $val );
+						}
+					} else {
+						$meta[ $key ]['value'][] = sanitize_title( $value );
+					}
+				} else {
+					if ( is_array( $value ) ) {
+						$value = array_map(
+							function( $val ) {
+									return sanitize_title( $val );
+							},
+							$value
+						);
+					} else {
+						$value = sanitize_title( $value );
+					}
+
+					$meta[ $key ] = [
+						'key'   => str_replace( 'meta-', '', $key ),
+						'value' => $value,
+					];
+				}
+			} elseif ( stripos( $key, 'filter-' ) === 0 ) {
+				$key          = str_replace( 'filter-', '', $key );
+				$data[ $key ] = $value;
+			}
+		}
+
+		/**
+		 * Sanitize the $_POST data.
+		 * Also, any filter that is not a taxonomy will be ignored.
+		 */
+		$taxonomies = [];
+		foreach ( $data as $key => $value ) {
+
+			if ( taxonomy_exists( $key ) ) {
+				if ( ! is_array( $value ) ) {
+					$value = [ $value ];
+				}
+
+				$taxonomies[ $key ] = $value;
+			} else {
+				$others[ $key ] = $value;
+			}
+		}
+
+		/**
+		 * Only "special" keys are kept, like:
+		 * - search
+		 * - sort
+		 * - sortby
+		 * - offset
+		 *
+		 * This will prevent the user from passing any custom argument to the WP_Query, like:
+		 *  https://example.com?posts_per_page=-1&post_type=post
+		 */
+		$sort   = $others['sort'] ?? '';
+		$sortby = $others['sortby'] ?? '';
+		$this->utils->debug( $others, 'others ' );
+
+		if ( ! empty( $sort ) ) {
+			$args['order'] = $sort;
+		}
+
+		if ( ! empty( $sortby ) ) {
+			$args['orderby'] = 'post_' . $sortby;
+		}
+
+		// Search?
+		$search = $others['search'] ?? '';
+		if ( ! empty( $search ) ) {
+			$args['s'] = $search;
+		}
+
+		/**
+		 * Offset conflicts with 'paged', can't use both.
+		 * Also offset have to be used only when clicking the LOAD MORE button.
+		 */
+		$append = $_POST['terraAppend'] ?? false;
+		$this->utils->debug( $append, 'Append: ' );
+		if ( $append === 'true' && isset( $params['posts-offset'] ) ) {
+			$args['offset'] = intval( $params['posts-offset'] );
+		}
+
+		$args = $this->modify_wp_query_args( $args, $taxonomies, $meta );
+
+		// Allow 3rd part to modify the $args array.
+		return apply_filters( 'terra_args', $args, $params );
+	}
+
+	/**
+	 * Apply the pre_get_posts filter
+	 *
+	 * It is possible to allow TERRA to filter your query by just adding the 'terra' => '1', to the
+	 * arguments of your WP_Query.
+	 *
+	 * @param object $query the WP_Query object.
+	 *
+	 * @return void
+	 */
+	public function pre_get_posts( $query ) {
+		$filter_main_query = isset( $_GET['query'] ) && ! empty( $_GET['query'] ) && $query->is_main_query();
+		$need_filtering    = ! empty( $query->get( 'terra' ) );
+
+		if ( $filter_main_query || $need_filtering ) {
+			$args = [];
+
+			// Allow 3rd part to modify the $args array.
+			if ( $filter_main_query ) {
+				$this->current_name = sanitize_title( wp_unslash( $_GET['query'] ) );
+			}
+
+			/**
+			 * When passing 'terra' => '...' to the custom query, normal pagination does not get considered.
+			 * We have to manually check it.
+			 */
+			if ( $need_filtering ) {
+				$this->current_name = sanitize_title( $query->get( 'terra' ) );
+
+				$current_page = max( 1, get_query_var( 'paged' ) );
+
+				if ( $current_page > 1 ) {
+					$args['paged'] = $current_page;
+				}
+			}
+
+			$this->utils->debug( 'FORM NAME: ' . $this->current_name );
+			$this->utils->debug( 'Params received:' );
+			$this->utils->debug( $_GET );
+
+			// Prevent the parameter "posts-offset" from being passed in the URL.
+			if ( isset( $_GET['posts-offset'] ) ) {
+				unset( $_GET['posts-offset'] );
+			}
+
+			$args = $this->filter_wp_query( $args, $_GET );
+			$args = apply_filters( 'terra_args__' . $this->current_name, $args, $_GET, [] );
+
+			$this->utils->debug( 'Custom $args values:' );
+			$this->utils->debug( $args );
+
+			if ( is_array( $args ) ) {
+				foreach ( $args as $key => $value ) {
+					$query->set( $key, $value );
+				}
+
+				$this->utils->debug( 'WP_Query query_vars:' );
+				$this->utils->debug( array_filter( $query->query_vars ) );
+			}
+		}
+	}
+
+	/**
+	 * Use the $args to properly set up the argument array needed for the WP_Query.
+	 *
+	 * For example:
+	 * Information like 'taxonomy' are passed as simple array/string by the form, so we need
+	 * to convert it in a "taxonomy_query" array used by WP_Query.
+	 *
+	 * @param array $args WP_Query args to modify.
+	 * @param array $taxonomies list of taxonomies to filter.
+	 * @param array $meta the meta_query data.
+	 */
+	private function modify_wp_query_args( $args, $taxonomies = [], $meta = [] ) {
+		// Append the taxonomy term.
+		if ( isset( $args['taxonomy'] ) && isset( $args['term_taxonomy_id'] ) ) {
+			$tax_query[] = [
+				'taxonomy' => $args['taxonomy'],
+				'field'    => 'term_id',
+				'terms'    => array( (int) $args['term_taxonomy_id'] ),
+			];
+
+			unset( $args['taxonomy'] );
+			unset( $args['term_taxonomy_id'] );
+		}
+
+		// Check if there is any taxonomy to filter.
+		if ( ! isset( $args['tax_query'] ) || ! is_array( $args['tax_query'] ) ) {
+			$args['tax_query'] = [];
+		}
+
+		$this->utils->debug( $taxonomies, '$taxonomies ' );
+
+		foreach ( $taxonomies as $taxonomy => $values ) {
+			if ( is_array( $values ) ) {
+				$values = array_filter( $values );
+			}
+
+			if ( empty( $values ) ) {
+				continue;
+			}
+
+			$tq = [
+				'taxonomy' => $taxonomy,
+				'field'    => 'slug',
+				'terms'    => $values,
+			];
+
+			if ( is_array( $values ) ) {
+				$tq['compare'] = 'IN';
+			}
+
+			$args['tax_query'][] = $tq;
+		}
+
+		/**
+		 * Category?
+		 */
+		// Filter by category id(s).
+		if ( isset( $args['category'] ) ) {
+			$values = $args['category'];
+
+			if ( ! is_array( $values ) ) {
+				$values = array( $values );
+			}
+
+			$args['category__in'] = $values;
+			unset( $args['category'] );
+		}
+
+		// Filter by category name(s).
+		if ( isset( $args['category-name'] ) ) {
+			$values = $args['category-name'];
+
+			if ( is_array( $values ) ) {
+				$values = implode( ',', array( $values ) );
+			}
+
+			$args['category_name'] = $values;
+
+			unset( $args['category__in'] );
+			unset( $args['category-name'] );
+			unset( $args['categoryName'] );
+		}
+
+		/**
+		 * Tag?
+		 */
+		if ( isset( $args['tag'] ) ) {
+			$values = $args['tag'];
+
+			if ( ! is_array( $values ) ) {
+				$values = array( $values );
+			}
+			$args['tag__in'] = $values;
+			unset( $args['tag'] );
+		}
+
+		/**
+		 * Meta filter?
+		 */
+		if ( ! empty( $meta ) ) {
+			if ( ! isset( $args['meta_key'] ) ) {
+				$args['meta_query'] = [];
+			}
+
+			$args['meta_query'] += $meta;
+		}
+
+		return $args;
 	}
 
 	/**
@@ -378,11 +708,10 @@ class Terra_Feed {
 	 * @param bool $show_pagination if true add the custom pagination.
 	 */
 	public function container_end( $show_pagination = false ) {
-		// TODO: pagination.
 		// The pagination has to be part of the container, as it has to be deleted for every request.
-		// if ( $show_pagination ) {
-		// 	self::pagination( self::$current_query );
-		// }
+		if ( $show_pagination ) {
+			$this->utils->pagination( $this->current_name, $this->current_query );
+		}
 
 		echo '</div>';
 
@@ -390,29 +719,9 @@ class Terra_Feed {
 		 * The field doesn't have to be deleted on the ajax request, that's
 		 * why is outside the container
 		 */
-		// if ( $show_pagination ) {
-		// 	self::hidden_terra_field( 'pagination', 1 );
-		// }
-	}
-
-	/**
-	 * Close the form tag and add pagination if true.
-	 *
-	 * TODO: lots of stuff.
-	 *
-	 * @param bool   $load_more if true add a submit "load more" button.
-	 * @param string $button_label the button label.
-	 */
-	public function end( $load_more = false, $button_label ) {
-		if ( $load_more ) {
-			if ( $button_label === null ) {
-				$button_label = __( 'LOAD MORE', 'stella' );
-			}
-
-			echo '<button type="submit" class="terra-submit" value="load-more">' . esc_html( $button_label ) . '</button>';
+		if ( $show_pagination ) {
+			$this->hidden_terra_field( 'pagination', 1 );
 		}
-
-		echo '</form>';
 	}
 
 	/**
@@ -428,7 +737,8 @@ class Terra_Feed {
 	 * @param string $prefix the prefix to prepend to the field.
 	 */
 	public function hidden_field( $name, $value, $prefix = 'field-' ) {
-		// TODO: apply_filters
+		$value = apply_filters( 'terra_hidden_field', $value, $name );
+		$value = apply_filters( 'terra_hidden_field__' . $this->current_name, $value, $name );
 
 		// Return if no value.
 		if ( empty( $value ) || $value === 0 ) {
@@ -596,7 +906,68 @@ class Terra_Feed {
 		$this->hidden_terra_field( 'page_id', get_queried_object_id() );
 
 		if ( $query->is_main_query() ) {
-			self::hidden_field( 'query', $this->current_name, '' );
+			$this->hidden_field( 'query', $this->current_name, '' );
+		}
+	}
+
+	/**
+	 * Close the form tag and add pagination if true.
+	 *
+	 * TODO: lots of stuff.
+	 *
+	 * @param bool   $load_more if true add a submit "load more" button.
+	 * @param string $button_label the button label.
+	 */
+	public function end( $load_more = false, $button_label = 'Load More' ) {
+		// The offset.
+		$this->hidden_field( 'offset', $this->offset, 'posts-' );
+
+		if ( $load_more ) {
+			if ( $button_label === null ) {
+				$button_label = __( 'LOAD MORE', 'stella' );
+			}
+
+			echo '<button type="submit" class="terra-submit" value="load-more">' . esc_html( $button_label ) . '</button>';
+		}
+
+		// Save the temp data.
+		$temp_file  = trailingslashit( sys_get_temp_dir() ) . 'terra-' . $this->unique_id;
+		$query_data = var_export( $this->temp_args, true );
+		$terra_data = var_export( $this->temp_terra, true );
+		$temp_data  = '<?php $query_args = ' . $query_data . '; $terra_args = ' . $terra_data . ';';
+
+		$saved = file_put_contents( $temp_file, $temp_data, LOCK_EX );
+
+		if ( ! $saved ) {
+			$this->utils->debug( 'TERRA: cannot generate temp file, TERRA will not work properly!' );
+
+			do_action( 'terra_temp_failed' );
+		}
+
+		echo '</form>';
+	}
+
+	/**
+	 * Show how many posts have been found using the single and plural form
+	 *
+	 * $this->current_query is used to get the # of posts found.
+	 *
+	 * @param string $single The text that will be used if $number is 1.
+	 * @param string $plural The text that will be used if $number is plural.
+	 */
+	public function posts_found( $single, $plural ) {
+		$label = sprintf( _n( $single, $plural, $this->current_query->found_posts ), $this->current_query->found_posts );
+
+		if ( wp_doing_ajax() ) {
+			echo '<terra-posts-found-label>' . $label . '</terra-posts-found-label>';
+		} else {
+			$this->hidden_terra_field( 'posts-found', 1 );
+			$this->hidden_terra_field( 'posts-found-single', $single );
+			$this->hidden_terra_field( 'posts-found-plural', $plural );
+
+			$hidden = '';
+
+			echo '<span class="terra-posts-found__label">' . $label . '</span>';
 		}
 	}
 

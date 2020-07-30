@@ -31,8 +31,6 @@ class Terra {
 
 		// Enqueue the JS script.
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_script' ] );
-
-		// TODO: wp_ajax actions.
 	}
 
 	/**

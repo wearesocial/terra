@@ -108,12 +108,14 @@ class Terra_Feed {
 	 * @param array $options for start().
 	 */
 	public function __construct( $start = false, $options = null ) {
-		add_action( 'wp_ajax_nine3_lama', [ $this, 'load_more' ] );
-		add_action( 'wp_ajax_nopriv_nine3_lama', [ $this, 'load_more' ] );
+		// Adding main ajax actions.
+		add_action( 'wp_ajax_nine3_terra', [ $this, 'load_more' ] );
+		add_action( 'wp_ajax_nopriv_nine3_terra', [ $this, 'load_more' ] );
 
 		// Include the terra.js script.
 		wp_enqueue_script( 'stella-terra' );
 
+		// Terra will take care of applying the filters present in the url.
 		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ], 99, 1 );
 
 		// Load utils and inject query.
@@ -1015,7 +1017,7 @@ class Terra_Feed {
 		$label = sprintf( _n( $single, $plural, $this->current_query->found_posts ), $this->current_query->found_posts ); // phpcs:ignore
 
 		if ( wp_doing_ajax() ) {
-			echo '<terra-posts-found-label>' . $label . '</terra-posts-found-label>';
+			echo '<terra-posts-found-label>' . esc_html( $label ) . '</terra-posts-found-label>';
 		} else {
 			$this->hidden_terra_field( 'posts-found', 1 );
 			$this->hidden_terra_field( 'posts-found-single', $single );

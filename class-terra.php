@@ -43,10 +43,12 @@ class Terra {
 		$dist = ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || $this->develop ) ? 'src/' : 'dist/';
 		wp_register_script( 'stella-terra', $dist . 'terra.js', [ 'jquery' ], TERRA_VERSION, true );
 
-		// TODO: Check https/http.
+		/**
+		 * To remove the https protocol replace ajaxurl with the following:
+		 * preg_replace( '/https?:\/\//', '//', admin_url( 'admin-ajax.php' ) )
+		 */
 		$data = array(
-			'ajaxurl'    => preg_replace( '/https?:\/\//', '//', admin_url( 'admin-ajax.php' ) ),
-			// 'ajaxurl'    => admin_url( 'admin-ajax.php' ),
+			'ajaxurl'    => admin_url( 'admin-ajax.php' ),
 			'nonce'      => wp_create_nonce( 'terra' ),
 			'archiveurl' => get_post_type() == 'post' ? get_permalink( get_option( 'page_for_posts' ) ) : get_post_type_archive_link( get_post_type() ),
 		);

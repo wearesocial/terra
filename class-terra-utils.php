@@ -383,20 +383,20 @@ class Terra_Utils {
 		}
 
 		if ( isset( $args['container_class'] ) ) {
-			echo '<div class="' . $args['container_class'] . '">';
+			echo '<div class="' . esc_attr( $args['container_class'] ) . '">';
 		}
 
 		// Add data-luna-toggle div.
 		if ( isset( $args['toggle'] ) ) {
-			echo '<div class="checkbox-trigger" data-luna-toggle="' . $args['toggle'] . '"></div>';
+			echo '<div class="checkbox-trigger" data-luna-toggle="' . esc_attr( $args['toggle'] ) . '"></div>';
 		}
 
 		if ( $type === 'checkbox' && $placeholder ) {
-			echo '<span class="placeholder">' . $placeholder . '</span>';
+			echo '<span class="placeholder">' . esc_html( $placeholder ) . '</span>';
 		}
 
 		if ( isset( $args['before'] ) ) {
-			echo $args['before'];
+			echo $args['before']; // phpcs:ignore
 		}
 
 		foreach ( $values as $key => $value ) {
@@ -444,7 +444,7 @@ class Terra_Utils {
 		}
 
 		if ( isset( $args['after'] ) ) {
-			echo $args['after'];
+			echo $args['after']; // phpcs:ignore
 		}
 
 		if ( isset( $args['container_class'] ) ) {
@@ -485,8 +485,8 @@ class Terra_Utils {
 		}
 
 		// Get the current filter args from $params, needs to be appended to the base_url.
-		if ( isset( $_POST['params'] ) ) {
-			parse_str( $_POST['params'], $params_array );
+		if ( isset( $_POST['params'] ) ) { // phpcs:ignore
+			parse_str( $_POST['params'], $params_array ); // phpcs:ignore
 			foreach ( $params_array as $key => $value ) {
 				if (
 					strpos( $key, 'terra-' ) !== false ||
@@ -554,7 +554,7 @@ class Terra_Utils {
 			error_log( $log );
 		} elseif ( defined( 'TERRA_DEBUG' ) && TERRA_DEBUG ) {
 			if ( is_string( $log ) ) {
-				$log = date( 'Y-m-d H:i:s: ' ) . $log;
+				$log = date( 'Y-m-d H:i:s: ' ) . $log; // phpcs:ignore
 			}
 
 			file_put_contents( ABSPATH . '/wp-content/terra.log', $log . PHP_EOL, FILE_APPEND );

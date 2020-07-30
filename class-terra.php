@@ -56,9 +56,12 @@ class Terra {
 
 	/**
 	 * Initialise feed object
+	 *
+	 * @param bool  $start set to true to run start from inside the fee construct().
+	 * @param array $options for start().
 	 */
-	public function create_feed() {
-		return new \Nine3\Terra_Feed();
+	public function create_feed( $start = false, $options = null ) {
+		return new \Nine3\Terra_Feed( $start, $options );
 	}
 
 	/**

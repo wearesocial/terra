@@ -27,6 +27,13 @@ namespace Nine3;
  */
 class Terra_Feed {
 	/**
+	 * Check to see if start() is called in __construct
+	 *
+	 * @var $terra_init
+	 */
+	private $terra_init;
+
+	/**
 	 * $query var used in start()
 	 *
 	 * @var WP_Query
@@ -80,14 +87,34 @@ class Terra_Feed {
 	public $utils;
 
 	/**
+	 * String in case we want to change the template part name for single post
+	 *
+	 * @var $template
+	 */
+	protected $template;
+
+	/**
+	 * Array of taxonomies to be used in load_more() to cross-reference
+	 * and hide empty terms
+	 *
+	 * @var $filter_tax
+	 */
+	protected $filter_tax;
+
+	/**
 	 * Initialise and enqueue the terra script.
 	 *
 	 * @param bool  $start set to true to run start().
 	 * @param array $options for start().
 	 */
 	public function __construct( $start = false, $options = null ) {
+		add_action( 'wp_ajax_nine3_lama', [ $this, 'load_more' ] );
+		add_action( 'wp_ajax_nopriv_nine3_lama', [ $this, 'load_more' ] );
+
 		// Include the terra.js script.
 		wp_enqueue_script( 'stella-terra' );
+
+		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ], 99, 1 );
 
 		// Load utils and inject query.
 		$query       = isset( $options['query'] ) ? $options['query'] : false;
@@ -95,11 +122,15 @@ class Terra_Feed {
 
 		// If start is true create start() method.
 		if ( $start && isset( $options ) && is_array( $options ) ) {
-			$this->start( $options['name'], $options['class'], $options['query'] );
+			// Create new variables for each $options key.
+			foreach ( $options as $key => $value ) {
+				$$key = $value;
+			}
+			$this->start( $name, $class, $query, $template, $filter_tax );
 		}
 
-		// TODO: optional parameters for template names, taxonomies, etc.
-		// TODO: Polylang?
+		// Set init var so we don't double anything up on start().
+		$this->terra_init = $start;
 	}
 
 	/**
@@ -116,7 +147,7 @@ class Terra_Feed {
 		do_action( 'terra_init' );
 
 		// The form name (used for the filters).
-		$name               = sanitize_title( wp_unslash( $_POST['terraName'] ) );
+		$name               = sanitize_title( wp_unslash( $_POST['terraName'] ) ); // phpcs:ignore
 		$this->current_name = $name;
 
 		// Allow to run some action for a specific filter only.
@@ -126,7 +157,7 @@ class Terra_Feed {
 		$params = [];
 
 		if ( isset( $_POST['params'] ) ) {
-			$post_data = wp_unslash( $_POST['params'] );
+			$post_data = wp_unslash( $_POST['params'] ); // phpcs:ignore
 			parse_str( $post_data, $params );
 			unset( $params['query'] );
 		}
@@ -162,7 +193,6 @@ class Terra_Feed {
 		$this->utils->debug( $params );
 
 		$args = $this->filter_wp_query( $args, $params );
-		// TODO.
 
 		if ( empty( $params['filter-search'] ) ) {
 			$this->utils->debug( 'SEARCH EMPTY' );
@@ -186,23 +216,17 @@ class Terra_Feed {
 
 			$this->current_query = $posts;
 
-			// TODO: Apply tax terms to disable/hide on front end.
-			// TODO: Need post type and taxonomies from either start() method.
-			if ( $post_type === 'post' ) {
-				$tax_terms = [];
+			// This is custom functionality to compile a list of all taxonomy terms for each post.
+			// This is later used in terra.js to disable dropdown options.
+			if ( $this->filter_tax ) {
+				$tax_terms              = [];
 				$args['posts_per_page'] = -1;
-				$filter_posts = new \WP_Query( $args );
+				$filter_posts           = new \WP_Query( $args );
 
 				$post_ids = wp_list_pluck( $filter_posts->posts, 'ID' );
 
 				foreach ( $post_ids as $post_id ) {
-					// This is custom functionality to compile a list of all taxonomy terms for each post.
-					// This is later used in terra.js to disable dropdown options.
-					$filter_tax = [
-						'persona',
-						'topic',
-						'resource-type',
-					];
+					$filter_tax = $this->filter_tax;
 
 					if ( ! empty( $filter_tax ) ) {
 						foreach ( $filter_tax as $ftx ) {
@@ -234,8 +258,31 @@ class Terra_Feed {
 		 * if there are no results.
 		 *
 		 * The default file name can be overriden using terra_template__[name] filter.
-		 * TODO: Allow names to be passed from start().
+		 * The start method also allows the injection of custom template names.
 		 */
+
+		/**
+		 * Check if a template name has been set
+		 *
+		 * If string then assume it's a name for posts found template
+		 * eg: 'template' => 'template-parts/post-single-item',
+		 *
+		 * If array then set single and none found template
+		 * eg:
+		 * 'template' => [
+		 *   'single' => 'template-parts/post-single-item',
+		 *   'none'   => 'template-parts/content-none',
+		 * ],
+		 */
+		if ( $this->template ) {
+			if ( is_array( $this->template ) ) {
+				$template_single = $this->template['single'];
+				$template_none   = $this->template['none'];
+			} elseif ( is_string( $this->template ) ) {
+				$template_single = $this->template;
+			}
+		}
+
 		if ( ( method_exists( $posts, 'have_posts' ) ) ) {
 			if ( $posts->have_posts() ) {
 				$count = 0;
@@ -244,7 +291,11 @@ class Terra_Feed {
 
 					$post_type = get_post_type( get_the_ID() );
 
-					$template = apply_filters( 'terra_template__' . $name, 'template-parts/' . $post_type . '-single-item', $post_type, $args );
+					if ( $template_single ) {
+						$template = apply_filters( 'terra_template__' . $name, $template_single, $post_type, $args );
+					} else {
+						$template = apply_filters( 'terra_template__' . $name, 'template-parts/' . $post_type . '-single-item', $post_type, $args );
+					}
 
 					$this->utils->debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
 
@@ -254,7 +305,11 @@ class Terra_Feed {
 					$count++;
 				}
 			} else {
-				$template = apply_filters( 'terra_template__' . $name . '_none', 'template-parts/' . $post_type . '-single-item-none', $post_type, $args );
+				if ( $template_none ) {
+					$template = apply_filters( 'terra_template__' . $name . '_none', $template_none, $post_type, $args );
+				} else {
+					$template = apply_filters( 'terra_template__' . $name . '_none', 'template-parts/' . $post_type . '-single-item-none', $post_type, $args );
+				}
 
 				$this->utils->debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
 
@@ -270,7 +325,6 @@ class Terra_Feed {
 
 			// Let's put back the custom pagination.
 			if ( isset( $terra['pagination'] ) ) {
-				// TODO: add method in utils.
 				$this->utils->pagination( $this->$current_name, $posts, true, $terra );
 			}
 
@@ -293,10 +347,10 @@ class Terra_Feed {
 			printf( '<terra-found>%d</terra-found>', (int) $found );
 		}
 
-		// TODO: taxonomies stuff for filters.
+		// Print cusom tags for tax filters.
 		if ( isset( $tax_terms ) ) {
 			$tax_terms = implode( ',', $tax_terms );
-			printf( '<terra-tax>%s</terra-tax>', $tax_terms );
+			printf( '<terra-tax>%s</terra-tax>', esc_html( $tax_terms ) );
 		}
 
 		wp_reset_postdata();
@@ -443,7 +497,7 @@ class Terra_Feed {
 		 * Offset conflicts with 'paged', can't use both.
 		 * Also offset have to be used only when clicking the LOAD MORE button.
 		 */
-		$append = $_POST['terraAppend'] ?? false;
+		$append = $_POST['terraAppend'] ?? false; // phpcs:ignore
 		$this->utils->debug( $append, 'Append: ' );
 		if ( $append === 'true' && isset( $params['posts-offset'] ) ) {
 			$args['offset'] = intval( $params['posts-offset'] );
@@ -633,10 +687,12 @@ class Terra_Feed {
 	 * @param string   $name a name used to specify the current form.
 	 * @param string   $class a class to add to the form.
 	 * @param WP_Query $query the custom query used. This is needed to figure out if there are more posts to load.
+	 * @param mixed    $template either string for single post template name or array of single and none.
+	 * @param array    $filter_tax the array of taxonomies to later cross-reference dropdowns.
 	 *
 	 * @throws \Exception Exception if 'name' parameter is empty.
 	 */
-	public function start( $name, $class = '', $query = null ) {
+	public function start( $name, $class = '', $query = null, $template = false, $filter_tax = false ) {
 		global $wp_query;
 
 		if ( empty( $name ) ) {
@@ -686,6 +742,8 @@ class Terra_Feed {
 		);
 
 		$this->current_name = $name;
+		$this->template     = $template;
+		$this->filter_tax   = $filter_tax;
 		$this->generate_hidden_fields( $query );
 	}
 
@@ -913,8 +971,6 @@ class Terra_Feed {
 	/**
 	 * Close the form tag and add pagination if true.
 	 *
-	 * TODO: lots of stuff.
-	 *
 	 * @param bool   $load_more if true add a submit "load more" button.
 	 * @param string $button_label the button label.
 	 */
@@ -956,7 +1012,7 @@ class Terra_Feed {
 	 * @param string $plural The text that will be used if $number is plural.
 	 */
 	public function posts_found( $single, $plural ) {
-		$label = sprintf( _n( $single, $plural, $this->current_query->found_posts ), $this->current_query->found_posts );
+		$label = sprintf( _n( $single, $plural, $this->current_query->found_posts ), $this->current_query->found_posts ); // phpcs:ignore
 
 		if ( wp_doing_ajax() ) {
 			echo '<terra-posts-found-label>' . $label . '</terra-posts-found-label>';
@@ -967,7 +1023,7 @@ class Terra_Feed {
 
 			$hidden = '';
 
-			echo '<span class="terra-posts-found__label">' . $label . '</span>';
+			echo '<span class="terra-posts-found__label">' . esc_html( $label ) . '</span>';
 		}
 	}
 
@@ -977,11 +1033,11 @@ class Terra_Feed {
 	 * @return array
 	 */
 	private function get_temp_data() {
-		$uid    = sanitize_title( $_POST['uid'] );
+		$uid    = sanitize_title( $_POST['uid'] ); // phpcs:ignore
 		$return = [ [], [] ];
 
 		$this->utils->debug( 'UID: ' . $uid );
-		$this->utils->debug( $_POST, '$_POST: ' );
+		$this->utils->debug( $_POST, '$_POST: ' ); // phpcs:ignore
 
 		// Nothing to do here.
 		if ( empty( $uid ) ) {

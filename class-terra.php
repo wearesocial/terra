@@ -31,25 +31,29 @@ class Terra {
 
 		// Enqueue the JS script.
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_script' ] );
+
+		// Init ajax and pre get posts actions.
+		// $init = new \Nine3\Terra_Feed( false, null, true );
 	}
 
 	/**
 	 * Register and localize the script.
 	 */
 	public function register_script() {
+		$url = trailingslashit( str_replace( ABSPATH, home_url( '/' ), __DIR__ ) );
 		// If we're debugging use /src - if production use /dist.
 		$dist = ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || $this->develop ) ? 'src/' : 'dist/';
-		wp_register_script( 'stella-terra', $dist . 'terra.js', [ 'jquery' ], TERRA_VERSION, true );
+		wp_register_script( 'stella-terra', $url . $dist . 'terra.js', [ 'jquery' ], TERRA_VERSION, true );
 
 		/**
 		 * To remove the https protocol replace ajaxurl with the following:
 		 * preg_replace( '/https?:\/\//', '//', admin_url( 'admin-ajax.php' ) )
 		 */
-		$data = array(
+		$data = [
 			'ajaxurl'    => admin_url( 'admin-ajax.php' ),
 			'nonce'      => wp_create_nonce( 'terra' ),
 			'archiveurl' => get_post_type() == 'post' ? get_permalink( get_option( 'page_for_posts' ) ) : get_post_type_archive_link( get_post_type() ),
-		);
+		];
 
 		wp_localize_script( 'stella-terra', 'terra', $data );
 	}

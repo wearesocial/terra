@@ -2,9 +2,9 @@
 
 function _instanceof(left, right) { if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) { return !!right[Symbol.hasInstance](left); } else { return left instanceof right; } }
 
-/* global lama, DocumentTouch */
+/* global terra, DocumentTouch */
 (function ($) {
-  var lamaSearch = document.querySelectorAll('.lama-search');
+  var terraSearch = document.querySelectorAll('.terra-search');
   var request;
   var lastFormData; // Used to check if the filters have been changed
   // This is going to be set to FALSE when using the buil-in LOAD MORE button.
@@ -37,7 +37,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
 
 
   function closeDropdowns() {
-    var dropdowns = document.querySelectorAll('.lama__dropdown');
+    var dropdowns = document.querySelectorAll('.terra__dropdown');
     var transitionEnd = whichTransitionEvent();
     dropdowns.forEach(function (dropdown) {
       if (!dropdown.classList.contains('visible')) {
@@ -49,7 +49,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
 
 
       if (transitionEnd) {
-        var list = dropdown.querySelector('.lama__dropdown__list');
+        var list = dropdown.querySelector('.terra__dropdown__list');
         list.style.height = '0';
         list.addEventListener(transitionEnd, function hideBlock() {
           this.style.display = 'none';
@@ -64,7 +64,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
   }
   /**
    * Get all the data from the serialized form and "append" all the filters
-   * to the URL, with the exception of the one starting with `lama-`.
+   * to the URL, with the exception of the one starting with `terra-`.
    */
 
 
@@ -82,7 +82,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
     });
     urlParameters = result;
     /**
-     * Only the keys not starting with lama- and not empty, please :)
+     * Only the keys not starting with terra- and not empty, please :)
      */
 
     values.forEach(function (value) {
@@ -104,11 +104,11 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
 
     });
     /**
-     * queryUrl was not being set due to a bug (one of many...) in Lama.
+     * queryUrl was not being set due to a bug (one of many...) in Terra.
      * So lets explicitly set the base url.
      */
 
-    queryUrl = lama.archiveurl;
+    queryUrl = terra.archiveurl;
     /**
      * If `parameters` contains only `query=` there is nothing to do here
      */
@@ -147,21 +147,21 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
       request.abort();
     }
 
-    $('body').trigger('lamaStart', [$form, $container]);
+    $('body').trigger('terraStart', [$form, $container]);
     var data = {
-      action: 'nine3_lama',
-      nonce: lama.nonce,
-      lamaFilter: true,
-      lamaName: $form.attr('name'),
-      lamaAppend: !clearContainer,
+      action: 'nine3_terra',
+      nonce: terra.nonce,
+      terraFilter: true,
+      terraName: $form.attr('name'),
+      terraAppend: !clearContainer,
       params: formData,
       uid: $form.data('uid')
     };
-    $form.removeClass('lama--done');
+    $form.removeClass('terra--done');
     request = $.ajax({
       // eslint-disable-line
       type: 'POST',
-      url: lama.ajaxurl,
+      url: terra.ajaxurl,
       data: data,
       success: function success(response) {
         /**
@@ -174,60 +174,63 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
         var $items = $(response);
 
         if ($items.length) {
-          $items.not('.lama-posts-found').addClass('loaded');
+          $items.not('.terra-posts-found').addClass('loaded');
           $container.append($items); // There are more elements to load?
 
-          var foundPosts = parseInt($container.find('lama-found').html(), 10);
-          var lamaPostsCount = parseInt($container.find('lama-posts-count').html(), 10);
-          var lamaOffset = parseInt($container.find('lama-offset').html(), 10);
-          var lamaTax = $container.find('lama-tax').html();
-          var lamaTaxArray = lamaTax.split(',');
+          var foundPosts = parseInt($container.find('terra-found').html(), 10);
+          var terraPostsCount = parseInt($container.find('terra-posts-count').html(), 10);
+          var terraOffset = parseInt($container.find('terra-offset').html(), 10);
+          var terraTax = $container.find('terra-tax').html();
 
-          if (lamaTax.length) {
-            $('.lama__select.lama-filter option').each(function (i, el) {
-              if (lamaTaxArray.includes(el.value) || el.value === '' || el.value == null || el.value === 'ASC' || el.value === 'DESC') {
-                el.style.display = 'block';
-              } else {
-                el.style.display = 'none';
-              }
-            });
+          if (terraTax) {
+            var terraTaxArray = terraTax.split(',');
+
+            if (terraTax.length) {
+              $('.terra__select.terra-filter option').each(function (i, el) {
+                if (terraTaxArray.includes(el.value) || el.value === '' || el.value == null || el.value === 'ASC' || el.value === 'DESC') {
+                  el.style.display = 'block';
+                } else {
+                  el.style.display = 'none';
+                }
+              });
+            }
           }
 
-          $form.find('input[name="posts-offset"]').val(lamaOffset); // if (lamaOffset + lamaPostsCount >= foundPosts) {
-          //   $form.addClass('lama-more--none');
+          $form.find('input[name="posts-offset"]').val(terraOffset); // if (terraOffset + terraPostsCount >= foundPosts) {
+          //   $form.addClass('terra-more--none');
           // }
 
-          if (foundPosts === 0 || lamaOffset === foundPosts) {
-            $form.addClass('lama-more--none');
+          if (foundPosts === 0 || terraOffset === foundPosts) {
+            $form.addClass('terra-more--none');
           } else {
-            $form.removeClass('lama-more--none');
+            $form.removeClass('terra-more--none');
           }
           /**
            * Update the label for founded posts, if any.
            */
 
 
-          var $postsFound = $form.find('.lama-posts-found__label');
+          var $postsFound = $form.find('.terra-posts-found__label');
 
           if ($postsFound.length) {
-            $postsFound.html($container.find('lama-posts-found-label').html());
-          } // Don't need the custom <lama-*> tags anymore
+            $postsFound.html($container.find('terra-posts-found-label').html());
+          } // Don't need the custom <terra-*> tags anymore
 
 
-          $container.find('lama-tax').remove();
-          $container.find('lama-found').remove();
-          $container.find('lama-offset').remove();
-          $container.find('lama-posts-count').remove();
-          $container.find('lama-posts-found-label').remove();
-          $form.removeClass('lama--ajax');
-          $form.addClass('lama--done');
+          $container.find('terra-tax').remove();
+          $container.find('terra-found').remove();
+          $container.find('terra-offset').remove();
+          $container.find('terra-posts-count').remove();
+          $container.find('terra-posts-found-label').remove();
+          $form.removeClass('terra--ajax');
+          $form.addClass('terra--done');
         } else {
           // No more items.
-          $form.addClass('lama-more--none');
+          $form.addClass('terra-more--none');
         }
 
         clearContainer = true;
-        $('body').trigger('lamaDone', [$container, $items]);
+        $('body').trigger('terraDone', [$container, $items]);
       }
     });
   }
@@ -237,7 +240,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
 
 
   function submitForm(form, event) {
-    if (!form.classList.contains('lama')) {
+    if (!form.classList.contains('terra')) {
       return true;
     }
 
@@ -248,15 +251,15 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
 
     var $form = $(form);
     /**
-     * Update the "lama-more" property:
+     * Update the "terra-more" property:
      *
      * 0 => no load more (so ignore the offset parameter)
      * 1 => load more
      */
 
-    $form.find('input[name="lama-more"]').val(clearContainer ? 0 : 1);
+    $form.find('input[name="terra-more"]').val(clearContainer ? 0 : 1);
     var formData = $form.serialize();
-    var $container = $form.find('.lama-container');
+    var $container = $form.find('.terra-container');
     /**
      * The form is submitted every time you click on a filter, even if you have selected the same option.
      * So, to avoid uploading the content when no filter has changed, we're going to compare the current
@@ -273,7 +276,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
     }
 
     lastFormData = formData;
-    $form.addClass('lama--ajax');
+    $form.addClass('terra--ajax');
     /**
      * Update the URL with the filters selected
      */
@@ -340,9 +343,9 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
 
   document.addEventListener('click', function (e) {
     var target = e.target;
-    var parent = target.parentNode; // Am I clicking any of the <span> element inside the "lama__dropdown__selected" button?
+    var parent = target.parentNode; // Am I clicking any of the <span> element inside the "terra__dropdown__selected" button?
 
-    if (parent.classList.contains('lama__dropdown__selected')) {
+    if (parent.classList.contains('terra__dropdown__selected')) {
       target = parent;
       parent = target.parentNode;
     } // Check if the current element is already open
@@ -357,7 +360,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
     } // Am I clicking on the custom select button?
 
 
-    if (target.classList.contains('lama__dropdown__selected')) {
+    if (target.classList.contains('terra__dropdown__selected')) {
       /**
        * Toggle the list height
        */
@@ -370,7 +373,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
       list.style.height = "".concat(list.children[0].clientHeight, "px");
       parent.classList.add('visible');
       e.stopPropagation(); // Am I clicking on the custom select single item?
-    } else if (target.classList.contains('lama__dropdown__list__button')) {
+    } else if (target.classList.contains('terra__dropdown__list__button')) {
       /**
        * When submitting the form with AJAX, need to update the <select>
        * as the button itself is not part of the value got from
@@ -381,14 +384,14 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
       var form = $(target).closest('form')[0];
       var select = form.querySelector("select[data-filter=\"".concat(name, "\"]")); // The span "selected" label
 
-      var _lama = $(target).closest('.lama__dropdown')[0];
+      var _terra = $(target).closest('.terra__dropdown')[0];
 
-      var label = _lama.querySelector('.lama__dropdown__selected__label');
+      var label = _terra.querySelector('.terra__dropdown__selected__label');
 
       select.value = target.value; // Update the <span> label
 
       label.innerHTML = target.innerHTML; // Am I clicking on the custom checkbox / radio filters?
-    } else if (target.classList.contains('lama-filter') && target.type && ['checkbox', 'radio'].indexOf(target.type) >= 0) {
+    } else if (target.classList.contains('terra-filter') && target.type && ['checkbox', 'radio'].indexOf(target.type) >= 0) {
       /**
        * Checkboxes and radio boxes will automatically trigger the form submit
        */
@@ -400,9 +403,9 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
    * Search input trigger load on change
    */
 
-  lamaSearch.forEach(function (input) {
+  terraSearch.forEach(function (input) {
     // IE doesn't support .closest on a JS node.
-    var form = $(input).closest('form.lama')[0];
+    var form = $(input).closest('form.terra')[0];
     var debounce = parseInt(input.getAttribute('data-debounce'), 10) || 200;
     var timeout = null;
     input.addEventListener('input', function () {
@@ -411,7 +414,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
         submitForm(form);
       }, debounce);
     });
-    var suggestions = document.querySelectorAll('.lama .g02__suggested-link');
+    var suggestions = document.querySelectorAll('.terra .g02__suggested-link');
 
     var _loop = function _loop(i) {
       suggestions[i].addEventListener('click', function (event) {
@@ -452,17 +455,17 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
    */
 
 
-  $('body').on('click', '.lama-submit', function () {
+  $('body').on('click', '.terra-submit', function () {
     clearContainer = false;
     var form = $(event.target).closest('form')[0];
     submitForm(form);
   }).ready(function () {
     if (isTouchDevice()) {
-      $('form.lama').addClass('is-touch');
+      $('form.terra').addClass('is-touch');
     } // Serialize the data of the form
 
 
-    lastFormData = $('form.lama').first().serialize();
+    lastFormData = $('form.terra').first().serialize();
   })
   /**
    * On select change (for touch devices only) we need to trigger the form submit
@@ -471,7 +474,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
    *
    * This event has also to be triggered when not using the "styled" dropdown.
    */
-  .on('change', '.lama__select', function () {
+  .on('change', '.terra__select', function () {
     var $this = $(this);
     var $form = $this.closest('form');
 
@@ -490,8 +493,8 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
    * Force select reset to placeholder
    */
 
-  $('.lama button[type="reset"]').on('click', function () {
-    $('.lama__select option').each(function () {
+  $('.terra button[type="reset"]').on('click', function () {
+    $('.terra__select option').each(function () {
       var isDisabled = $(this).prop('disabled');
 
       if (isDisabled) {

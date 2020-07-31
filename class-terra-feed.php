@@ -1,11 +1,15 @@
 <?php
 /**
  * This class generates and loads the html needed for Terra filtering.
+ * This class is a rewrite of Lama: https://93digital.gitlab.io/lama/
+ * This class helps to filter taxonomies via ajax (or XMLHttpRequest..?).
  *
  * @package stella
  */
 
 namespace Nine3;
+
+define( 'TERRA_VERSION', '0.1.0' );
 
 /**
  * Functions include:
@@ -87,7 +91,7 @@ class Terra_Feed {
 	public $utils;
 
 	/**
-	 * String in case we want to change the template part name for single post
+	 * String or array in case we want to change the template part name for single post
 	 *
 	 * @var $template
 	 */
@@ -102,21 +106,21 @@ class Terra_Feed {
 	protected $filter_tax;
 
 	/**
-	 * Initialise and enqueue the terra script.
+	 * Create Feed and enqueue the terra script.
 	 *
 	 * @param bool  $start set to true to run start().
 	 * @param array $options for start().
 	 */
-	public function __construct( $start = false, $options = null ) {
+	public function __construct( $start = false, $options = null) {
 		// Adding main ajax actions.
 		add_action( 'wp_ajax_nine3_terra', [ $this, 'load_more' ] );
 		add_action( 'wp_ajax_nopriv_nine3_terra', [ $this, 'load_more' ] );
 
-		// Include the terra.js script.
-		wp_enqueue_script( 'stella-terra' );
-
 		// Terra will take care of applying the filters present in the url.
 		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ], 99, 1 );
+
+		// Include the terra.js script.
+		wp_enqueue_script( 'stella-terra' );
 
 		// Load utils and inject query.
 		$query       = isset( $options['query'] ) ? $options['query'] : false;
@@ -124,10 +128,12 @@ class Terra_Feed {
 
 		// If start is true create start() method.
 		if ( $start && isset( $options ) && is_array( $options ) ) {
-			// Create new variables for each $options key.
-			foreach ( $options as $key => $value ) {
-				$$key = $value;
-			}
+			// Defaults.
+			$name       = isset( $options['name'] ) ? $options['name'] : false;
+			$class      = isset( $options['class'] ) ? $options['class'] : '';
+			$query      = isset( $options['query'] ) ? $options['query'] : null;
+			$template   = isset( $options['template'] ) ? $options['template'] : false;
+			$filter_tax = isset( $options['filter_tax'] ) ? $options['filter_tax'] : false;
 			$this->start( $name, $class, $query, $template, $filter_tax );
 		}
 
@@ -138,7 +144,7 @@ class Terra_Feed {
 	/**
 	 * Parse the data sent via $_POST and so loads the new posts.
 	 */
-	public static function load_more() {
+	public function load_more() {
 		check_ajax_referer( 'terra', 'nonce' );
 
 		if ( ! isset( $_POST['terraFilter'] ) ) {
@@ -276,6 +282,8 @@ class Terra_Feed {
 		 *   'none'   => 'template-parts/content-none',
 		 * ],
 		 */
+		$this->utils->debug( 'this->template' );
+		$this->utils->debug( $this->name );
 		if ( $this->template ) {
 			if ( is_array( $this->template ) ) {
 				$template_single = $this->template['single'];

@@ -143,8 +143,6 @@ class Terra_Feed extends Terra {
 	 * Parse the data sent via $_POST and so loads the new posts.
 	 */
 	public function load_more() {
-		$this->utils->debug( 'AJAX ACTION' );
-		$this->utils->debug( $_POST['terraFilter'] );
 		check_ajax_referer( 'terra', 'nonce' );
 
 		if ( ! isset( $_POST['terraFilter'] ) ) {

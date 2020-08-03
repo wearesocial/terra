@@ -31,9 +31,6 @@ class Terra {
 
 		// Enqueue the JS script.
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_script' ] );
-
-		// Init ajax and pre get posts actions.
-		// $init = new \Nine3\Terra_Feed( false, null, true );
 	}
 
 	/**

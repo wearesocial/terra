@@ -9,8 +9,6 @@
 
 namespace Nine3;
 
-define( 'TERRA_VERSION', '0.1.0' );
-
 /**
  * Functions include:
  * - __construct()
@@ -29,7 +27,7 @@ define( 'TERRA_VERSION', '0.1.0' );
  * - posts_found()
  * - get_temp_data()
  */
-class Terra_Feed {
+class Terra_Feed extends Terra {
 	/**
 	 * Check to see if start() is called in __construct
 	 *
@@ -111,16 +109,16 @@ class Terra_Feed {
 	 * @param bool  $start set to true to run start().
 	 * @param array $options for start().
 	 */
-	public function __construct( $start = false, $options = null) {
+	public function __construct( $start = false, $options = null ) {
+		// Enqueue the terra.js script.
+		wp_enqueue_script( 'stella-terra' );
+
 		// Adding main ajax actions.
 		add_action( 'wp_ajax_nine3_terra', [ $this, 'load_more' ] );
 		add_action( 'wp_ajax_nopriv_nine3_terra', [ $this, 'load_more' ] );
 
 		// Terra will take care of applying the filters present in the url.
 		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ], 99, 1 );
-
-		// Include the terra.js script.
-		wp_enqueue_script( 'stella-terra' );
 
 		// Load utils and inject query.
 		$query       = isset( $options['query'] ) ? $options['query'] : false;
@@ -145,6 +143,8 @@ class Terra_Feed {
 	 * Parse the data sent via $_POST and so loads the new posts.
 	 */
 	public function load_more() {
+		$this->utils->debug( 'AJAX ACTION' );
+		$this->utils->debug( $_POST['terraFilter'] );
 		check_ajax_referer( 'terra', 'nonce' );
 
 		if ( ! isset( $_POST['terraFilter'] ) ) {

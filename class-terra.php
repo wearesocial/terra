@@ -228,11 +228,11 @@ class Terra {
 					$count++;
 				}
 			} else {
-				// if ( $template_none ) {
-				// 	$template = apply_filters( 'terra_template__' . $name . '_none', $template_none, $post_type, $args );
-				// } else {
+				if ( $template_none ) {
+					$template = apply_filters( 'terra_template__' . $name . '_none', $template_none, $post_type, $args );
+				} else {
 					$template = apply_filters( 'terra_template__' . $name . '_none', 'template-parts/' . $post_type . '-single-item-none', $post_type, $args );
-				// }
+				}
 
 				$this->debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
 

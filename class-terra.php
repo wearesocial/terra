@@ -22,6 +22,13 @@ class Terra {
 	private $develop;
 
 	/**
+	 * The current form name.
+	 *
+	 * @var string
+	 */
+	private $current_name = null;
+
+	/**
 	 * Initialise.
 	 *
 	 * @param bool $develop true if debug.
@@ -35,6 +42,9 @@ class Terra {
 		// Adding main ajax actions.
 		add_action( 'wp_ajax_nine3_terra', [ $this, 'load_more' ] );
 		add_action( 'wp_ajax_nopriv_nine3_terra', [ $this, 'load_more' ] );
+
+		// Terra will take care of applying the filters present in the url.
+		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ], 99, 1 );
 	}
 
 	/**
@@ -74,7 +84,7 @@ class Terra {
 
 		// The form name (used for the filters).
 		$name = sanitize_title( wp_unslash( $_POST['terraName'] ) ); // phpcs:ignore
-		// $this->current_name = $name; // TODO.
+		$this->current_name = $name;
 
 		// Allow to run some action for a specific filter only.
 		do_action( 'terra_init__' . $name );
@@ -144,34 +154,33 @@ class Terra {
 
 			// This is custom functionality to compile a list of all taxonomy terms for each post.
 			// This is later used in terra.js to disable dropdown options.
-			// TODO: hidden fields / temp data
-			// if ( $this->filter_tax ) {
-			// 	$tax_terms              = [];
-			// 	$args['posts_per_page'] = -1;
-			// 	$filter_posts           = new \WP_Query( $args );
+			if ( isset( $terra['filter_tax'] ) ) {
+				$tax_terms              = [];
+				$args['posts_per_page'] = -1;
+				$filter_posts           = new \WP_Query( $args );
 
-			// 	$post_ids = wp_list_pluck( $filter_posts->posts, 'ID' );
+				$post_ids = wp_list_pluck( $filter_posts->posts, 'ID' );
 
-			// 	foreach ( $post_ids as $post_id ) {
-			// 		$filter_tax = $this->filter_tax;
+				foreach ( $post_ids as $post_id ) {
+					$filter_tax = $terra['filter_tax'];
 
-			// 		if ( ! empty( $filter_tax ) ) {
-			// 			foreach ( $filter_tax as $ftx ) {
-			// 				$all_tax_obj[] = get_the_terms( $post_id, $ftx );
-			// 			}
-			// 		}
+					if ( ! empty( $filter_tax ) ) {
+						foreach ( $filter_tax as $ftx ) {
+							$all_tax_obj[] = get_the_terms( $post_id, $ftx );
+						}
+					}
 
-			// 		if ( is_array( $all_tax_obj ) || is_object( $all_tax_obj ) ) {
-			// 			foreach ( $all_tax_obj as $tax_obj ) {
-			// 				foreach ( $tax_obj as $single_tax ) {
-			// 					if ( ! in_array( $single_tax->slug, $tax_terms, true ) ) {
-			// 						array_push( $tax_terms, $single_tax->slug );
-			// 					}
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
+					if ( is_array( $all_tax_obj ) || is_object( $all_tax_obj ) ) {
+						foreach ( $all_tax_obj as $tax_obj ) {
+							foreach ( $tax_obj as $single_tax ) {
+								if ( ! in_array( $single_tax->slug, $tax_terms, true ) ) {
+									array_push( $tax_terms, $single_tax->slug );
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 
 		// Allow 3rd party to inject HTML before the terra's loop.
@@ -218,7 +227,11 @@ class Terra {
 
 					$post_type = get_post_type( get_the_ID() );
 
-					$template = apply_filters( 'terra_template__' . $name, 'template-parts/' . $post_type . '-single-item', $post_type, $args );
+					if ( $template_single ) {
+						$template = apply_filters( 'terra_template__' . $name, $template_single, $post_type, $args );
+					} else {
+						$template = apply_filters( 'terra_template__' . $name, 'template-parts/' . $post_type . '-single-item', $post_type, $args );
+					}
 
 					$this->debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
 
@@ -279,6 +292,68 @@ class Terra {
 		wp_reset_postdata();
 
 		die();
+	}
+
+	/**
+	 * Apply the pre_get_posts filter
+	 *
+	 * It is possible to allow TERRA to filter your query by just adding the 'terra' => '1', to the
+	 * arguments of your WP_Query.
+	 *
+	 * @param object $query the WP_Query object.
+	 *
+	 * @return void
+	 */
+	public function pre_get_posts( $query ) {
+		$filter_main_query = isset( $_GET['query'] ) && ! empty( $_GET['query'] ) && $query->is_main_query();
+		$need_filtering    = ! empty( $query->get( 'terra' ) );
+
+		if ( $filter_main_query || $need_filtering ) {
+			$args = [];
+
+			// Allow 3rd part to modify the $args array.
+			if ( $filter_main_query ) {
+				$this->current_name = sanitize_title( wp_unslash( $_GET['query'] ) );
+			}
+
+			/**
+			 * When passing 'terra' => '...' to the custom query, normal pagination does not get considered.
+			 * We have to manually check it.
+			 */
+			if ( $need_filtering ) {
+				$this->current_name = sanitize_title( $query->get( 'terra' ) );
+
+				$current_page = max( 1, get_query_var( 'paged' ) );
+
+				if ( $current_page > 1 ) {
+					$args['paged'] = $current_page;
+				}
+			}
+
+			$this->debug( 'FORM NAME: ' . $this->current_name );
+			$this->debug( 'Params received:' );
+			$this->debug( $_GET );
+
+			// Prevent the parameter "posts-offset" from being passed in the URL.
+			if ( isset( $_GET['posts-offset'] ) ) {
+				unset( $_GET['posts-offset'] );
+			}
+
+			$args = $this->filter_wp_query( $args, $_GET );
+			$args = apply_filters( 'terra_args__' . $this->current_name, $args, $_GET, [] );
+
+			$this->debug( 'Custom $args values:' );
+			$this->debug( $args );
+
+			if ( is_array( $args ) ) {
+				foreach ( $args as $key => $value ) {
+					$query->set( $key, $value );
+				}
+
+				$this->debug( 'WP_Query query_vars:' );
+				$this->debug( array_filter( $query->query_vars ) );
+			}
+		}
 	}
 
 	/**

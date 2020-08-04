@@ -40,28 +40,28 @@ class Terra_Feed extends Terra {
 	 *
 	 * @var WP_Query
 	 */
-	protected $current_query;
+	private $current_query;
 
 	/**
 	 * The unique id to identify the current query.
 	 *
 	 * @var string
 	 */
-	protected $unique_id = null;
+	private $unique_id = null;
 
 	/**
 	 * Current query offset stored as need to be added after the closing tag.
 	 *
 	 * @var int
 	 */
-	protected $offset = 0;
+	private $offset = 0;
 
 	/**
 	 * The current form name.
 	 *
 	 * @var string
 	 */
-	protected $current_name = null;
+	private $current_name = null;
 
 	/**
 	 * Array to be saved in the temp file.
@@ -70,7 +70,7 @@ class Terra_Feed extends Terra {
 	 *
 	 * @var array
 	 */
-	protected $temp_args = [];
+	private $temp_args = [];
 
 	/**
 	 * Array to be saved in the temp file.
@@ -79,7 +79,7 @@ class Terra_Feed extends Terra {
 	 *
 	 * @var array
 	 */
-	protected $temp_terra = [];
+	private $temp_terra = [];
 
 	/**
 	 * The utils object
@@ -93,7 +93,7 @@ class Terra_Feed extends Terra {
 	 *
 	 * @var $template
 	 */
-	protected $template;
+	private $template;
 
 	/**
 	 * Array of taxonomies to be used in load_more() to cross-reference
@@ -101,7 +101,7 @@ class Terra_Feed extends Terra {
 	 *
 	 * @var $filter_tax
 	 */
-	protected $filter_tax;
+	private $filter_tax;
 
 	/**
 	 * Create Feed and enqueue the terra script.
@@ -112,9 +112,6 @@ class Terra_Feed extends Terra {
 	public function __construct( $start = false, $options = null ) {
 		// Enqueue the terra.js script.
 		wp_enqueue_script( 'stella-terra' );
-
-		// Terra will take care of applying the filters present in the url.
-		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ], 99, 1 );
 
 		// Load utils and inject query.
 		$query       = isset( $options['query'] ) ? $options['query'] : false;
@@ -136,69 +133,6 @@ class Terra_Feed extends Terra {
 	}
 
 	/**
-	 * Apply the pre_get_posts filter
-	 *
-	 * It is possible to allow TERRA to filter your query by just adding the 'terra' => '1', to the
-	 * arguments of your WP_Query.
-	 *
-	 * @param object $query the WP_Query object.
-	 *
-	 * @return void
-	 */
-	public function pre_get_posts( $query ) {
-		global $terra;
-		$filter_main_query = isset( $_GET['query'] ) && ! empty( $_GET['query'] ) && $query->is_main_query();
-		$need_filtering    = ! empty( $query->get( 'terra' ) );
-
-		if ( $filter_main_query || $need_filtering ) {
-			$args = [];
-
-			// Allow 3rd part to modify the $args array.
-			if ( $filter_main_query ) {
-				$this->current_name = sanitize_title( wp_unslash( $_GET['query'] ) );
-			}
-
-			/**
-			 * When passing 'terra' => '...' to the custom query, normal pagination does not get considered.
-			 * We have to manually check it.
-			 */
-			if ( $need_filtering ) {
-				$this->current_name = sanitize_title( $query->get( 'terra' ) );
-
-				$current_page = max( 1, get_query_var( 'paged' ) );
-
-				if ( $current_page > 1 ) {
-					$args['paged'] = $current_page;
-				}
-			}
-
-			$terra->debug( 'FORM NAME: ' . $this->current_name );
-			$terra->debug( 'Params received:' );
-			$terra->debug( $_GET );
-
-			// Prevent the parameter "posts-offset" from being passed in the URL.
-			if ( isset( $_GET['posts-offset'] ) ) {
-				unset( $_GET['posts-offset'] );
-			}
-
-			$args = $terra->filter_wp_query( $args, $_GET );
-			$args = apply_filters( 'terra_args__' . $this->current_name, $args, $_GET, [] );
-
-			$terra->debug( 'Custom $args values:' );
-			$terra->debug( $args );
-
-			if ( is_array( $args ) ) {
-				foreach ( $args as $key => $value ) {
-					$query->set( $key, $value );
-				}
-
-				$terra->debug( 'WP_Query query_vars:' );
-				$terra->debug( array_filter( $query->query_vars ) );
-			}
-		}
-	}
-
-	/**
 	 * Generate the markup for the opening tag form.
 	 *
 	 * @param string   $name a name used to specify the current form.
@@ -212,14 +146,6 @@ class Terra_Feed extends Terra {
 	public function start( $name, $class = '', $query = null, $template = false, $filter_tax = false ) {
 		global $wp_query;
 
-		// echo '<pre>';
-		// var_dump( $name );
-		// var_dump( $class );
-		// var_dump( $query );
-		// var_dump( $template );
-		// var_dump( $filter_tax );
-		// echo '</pre>';
-
 		if ( empty( $name ) ) {
 			echo 'Terra: No name specified!';
 			throw new \Exception( 'Terra: No name specified!' );
@@ -227,6 +153,11 @@ class Terra_Feed extends Terra {
 
 		// Name used to trigger actions and filters.
 		$name = sanitize_title( $name );
+
+		// Add utils if not exists.
+		if ( ! isset( $this->utils ) && ! is_null( $query ) ) {
+			$this->utils = new Terra_Utils( $query );
+		}
 
 		// If $query isn't set use default $wp_query.
 		if ( is_null( $query ) ) {
@@ -291,9 +222,10 @@ class Terra_Feed extends Terra {
 	 * @param bool $show_pagination if true add the custom pagination.
 	 */
 	public function container_end( $show_pagination = false ) {
+		global $terra;
 		// The pagination has to be part of the container, as it has to be deleted for every request.
 		if ( $show_pagination ) {
-			$this->utils->pagination( $this->current_name, $this->current_query );
+			$terra->pagination( $this->current_name, $this->current_query );
 		}
 
 		echo '</div>';
@@ -320,9 +252,6 @@ class Terra_Feed extends Terra {
 	 * @param string $prefix the prefix to prepend to the field.
 	 */
 	public function hidden_field( $name, $value, $prefix = 'field-' ) {
-		// $value = apply_filters( 'terra_hidden_field', $value, $name );
-		// $value = apply_filters( 'terra_hidden_field__' . $this->current_name, $value, $name );
-
 		// Return if no value.
 		if ( empty( $value ) || $value === 0 ) {
 			return;

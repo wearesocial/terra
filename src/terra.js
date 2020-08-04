@@ -189,9 +189,9 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
             if (terraTax.length) {
               $('.terra__select.terra-filter option').each(function (i, el) {
                 if (terraTaxArray.includes(el.value) || el.value === '' || el.value == null || el.value === 'ASC' || el.value === 'DESC') {
-                  el.style.display = 'block';
+                  el.removeAttribute('disabled');
                 } else {
-                  el.style.display = 'none';
+                  el.setAttribute('disabled', 'disabled');
                 }
               });
             }

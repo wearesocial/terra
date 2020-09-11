@@ -16,7 +16,6 @@ namespace Nine3;
  * - add_custom_style_filter()
  * - add_radio_or_checkbox_filter()
  * - pagination()
- * - debug()
  */
 class Terra_Utils {
 	/**
@@ -88,12 +87,30 @@ class Terra_Utils {
 	 */
 	public function add_taxonomy_filter( $taxonomy, $args = [], $style = 'select' ) {
 		$term_args = $args['term-args'] ?? [];
-		$terms     = get_terms(
-			array_merge(
-				$term_args,
-				[ 'taxonomy' => $taxonomy ]
-			)
-		);
+
+		// If hide empty set only the terms found in current query posts.
+		if ( isset( $args['hide_empty'] ) ) {
+			if ( is_object( $args['hide_empty'] ) ) {
+				$all_posts = $args['hide_empty'];
+			} else {
+				$all_posts = get_posts(
+					[
+						'fields'         => 'ids',
+						'post_type'      => $this->current_query->get( 'post_type' ),
+						'posts_per_page' => -1,
+					]
+				);
+			}
+
+			$terms = wp_get_object_terms( $all_posts, $taxonomy );
+		} else {
+			$terms = get_terms(
+				array_merge(
+					$term_args,
+					[ 'taxonomy' => $taxonomy ]
+				)
+			);
+		}
 
 		$values = [];
 

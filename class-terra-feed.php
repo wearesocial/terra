@@ -24,7 +24,6 @@ namespace Nine3;
  * - hidden_query_field()
  * - generate_hidden_fields()
  * - end()
- * - posts_found()
  * - get_temp_data()
  */
 class Terra_Feed extends Terra {
@@ -449,7 +448,7 @@ class Terra_Feed extends Terra {
 		$saved = file_put_contents( $temp_file, $temp_data, LOCK_EX );
 
 		if ( ! $saved ) {
-			$this->utils->debug( 'TERRA: cannot generate temp file, TERRA will not work properly!' );
+			Terra::debug( 'TERRA: cannot generate temp file, TERRA will not work properly!' );
 
 			do_action( 'terra_temp_failed' );
 		}

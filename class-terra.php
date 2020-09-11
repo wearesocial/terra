@@ -22,6 +22,13 @@ class Terra {
 	private $develop;
 
 	/**
+	 * The main query
+	 *
+	 * @var WP_Query
+	 */
+	private $current_query;
+
+	/**
 	 * The current form name.
 	 *
 	 * @var string
@@ -124,22 +131,22 @@ class Terra {
 			}
 		}
 
-		$this->debug( 'FORM NAME: ' . $name );
-		$this->debug( 'Params received:' );
-		$this->debug( $params );
+		self::debug( 'FORM NAME: ' . $name );
+		self::debug( 'Params received:' );
+		self::debug( $params );
 
 		$args = $this->filter_wp_query( $args, $params );
 
 		if ( empty( $params['filter-search'] ) ) {
-			$this->debug( 'SEARCH EMPTY' );
+			self::debug( 'SEARCH EMPTY' );
 			unset( $args['s'] );
 		}
 
 		// Lets us modify the args for each form.
 		$args = apply_filters( 'terra_args__' . $name, $args, $params, $terra );
 
-		$this->debug( 'WP_Query arguments applied:' );
-		$this->debug( $args );
+		self::debug( 'WP_Query arguments applied:' );
+		self::debug( $args );
 
 		// WP_Query run.
 		$posts     = [];
@@ -148,7 +155,7 @@ class Terra {
 		if ( ! empty( $args ) ) {
 			$posts = new \WP_Query( $args );
 
-			$this->debug( $posts->request, '(SQL) ' );
+			self::debug( $posts->request, '(SQL) ' );
 
 			// $this->current_query = $posts; // TODO.
 
@@ -225,6 +232,9 @@ class Terra {
 				while ( $posts->have_posts() ) {
 					$posts->the_post();
 
+					// Allow 3rd party to inject HTML inside terra's loop.
+					do_action( 'terra_inside_loop__' . $name, $count, get_the_ID(), $params );
+
 					$post_type = get_post_type( get_the_ID() );
 
 					if ( $template_single ) {
@@ -233,7 +243,7 @@ class Terra {
 						$template = apply_filters( 'terra_template__' . $name, 'template-parts/' . $post_type . '-single-item', $post_type, $args );
 					}
 
-					$this->debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
+					self::debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
 
 					if ( $post_type !== null ) {
 						get_template_part( $template );
@@ -247,7 +257,7 @@ class Terra {
 					$template = apply_filters( 'terra_template__' . $name . '_none', 'template-parts/' . $post_type . '-single-item-none', $post_type, $args );
 				}
 
-				$this->debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
+				self::debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
 
 				if ( $post_type !== null ) {
 					get_template_part( $template );
@@ -268,6 +278,7 @@ class Terra {
 			if ( isset( $terra['posts-found'] ) ) {
 				$this->posts_found( $terra['posts-found-single'], $terra['posts-found-plural'], $posts );
 			}
+			self::debug( 'HALLO: ' . $terra['posts-found'] );
 		}
 
 		// User can add some extra HTML after the loop, like pagination, etc.
@@ -309,6 +320,8 @@ class Terra {
 		$need_filtering    = ! empty( $query->get( 'terra' ) );
 
 		if ( $filter_main_query || $need_filtering ) {
+			$this->current_query = $query;
+
 			$args = [];
 
 			// Allow 3rd part to modify the $args array.
@@ -330,9 +343,9 @@ class Terra {
 				}
 			}
 
-			$this->debug( 'FORM NAME: ' . $this->current_name );
-			$this->debug( 'Params received:' );
-			$this->debug( $_GET );
+			self::debug( 'FORM NAME: ' . $this->current_name );
+			self::debug( 'Params received:' );
+			self::debug( $_GET );
 
 			// Prevent the parameter "posts-offset" from being passed in the URL.
 			if ( isset( $_GET['posts-offset'] ) ) {
@@ -342,16 +355,16 @@ class Terra {
 			$args = $this->filter_wp_query( $args, $_GET );
 			$args = apply_filters( 'terra_args__' . $this->current_name, $args, $_GET, [] );
 
-			$this->debug( 'Custom $args values:' );
-			$this->debug( $args );
+			self::debug( 'Custom $args values:' );
+			self::debug( $args );
 
 			if ( is_array( $args ) ) {
 				foreach ( $args as $key => $value ) {
 					$query->set( $key, $value );
 				}
 
-				$this->debug( 'WP_Query query_vars:' );
-				$this->debug( array_filter( $query->query_vars ) );
+				self::debug( 'WP_Query query_vars:' );
+				self::debug( array_filter( $query->query_vars ) );
 			}
 		}
 	}
@@ -475,7 +488,7 @@ class Terra {
 		 */
 		$sort   = $others['sort'] ?? '';
 		$sortby = $others['sortby'] ?? '';
-		$this->debug( $others, 'others ' );
+		self::debug( $others, 'others ' );
 
 		if ( ! empty( $sort ) ) {
 			$args['order'] = $sort;
@@ -496,7 +509,7 @@ class Terra {
 		 * Also offset have to be used only when clicking the LOAD MORE button.
 		 */
 		$append = $_POST['terraAppend'] ?? false; // phpcs:ignore
-		$this->debug( $append, 'Append: ' );
+		self::debug( $append, 'Append: ' );
 		if ( $append === 'true' && isset( $params['posts-offset'] ) ) {
 			$args['offset'] = intval( $params['posts-offset'] );
 		}
@@ -536,7 +549,7 @@ class Terra {
 			$args['tax_query'] = [];
 		}
 
-		$this->debug( $taxonomies, '$taxonomies ' );
+		self::debug( $taxonomies, '$taxonomies ' );
 
 		foreach ( $taxonomies as $taxonomy => $values ) {
 			if ( is_array( $values ) ) {
@@ -626,8 +639,8 @@ class Terra {
 		$uid    = sanitize_title( $_POST['uid'] ); // phpcs:ignore
 		$return = [ [], [] ];
 
-		$this->debug( 'UID: ' . $uid );
-		$this->debug( $_POST, '$_POST: ' ); // phpcs:ignore
+		self::debug( 'UID: ' . $uid );
+		self::debug( $_POST, '$_POST: ' ); // phpcs:ignore
 
 		// Nothing to do here.
 		if ( empty( $uid ) ) {
@@ -637,7 +650,7 @@ class Terra {
 		// Save the "temp" data.
 		$temp_file = trailingslashit( sys_get_temp_dir() ) . 'terra-' . $uid;
 		if ( ! file_exists( $temp_file ) ) {
-			$this->debug( 'TERRA: cannot load temp file!' );
+			self::debug( 'TERRA: cannot load temp file!' );
 
 			do_action( 'terra_temp_failed' );
 
@@ -646,9 +659,9 @@ class Terra {
 
 		include $temp_file;
 
-		$this->debug( 'Parameters loaded' );
-		$this->debug( $query_args, '($query_args) ' );
-		$this->debug( $terra_args, '($terra_args) ' );
+		self::debug( 'Parameters loaded' );
+		self::debug( $query_args, '($query_args) ' );
+		self::debug( $terra_args, '($terra_args) ' );
 
 		return [ $query_args, $terra_args ];
 	}
@@ -733,8 +746,8 @@ class Terra {
 		$template = apply_filters( 'terra_pagination_template', $terra_template, $query, $args, $params );
 		$template = apply_filters( 'terra_pagination_template__' . $current_name, $template, $query, $args, $params );
 
-		$this->debug( $args, '(pagination) ' );
-		$this->debug( $template, 'Pagination Template: ' );
+		self::debug( $args, '(pagination) ' );
+		self::debug( $template, 'Pagination Template: ' );
 
 		if ( $template ) {
 			include $template;
@@ -750,20 +763,34 @@ class Terra {
 	 * @param string   $plural The text that will be used if $number is plural.
 	 * @param WP_Query $query the curent query object.
 	 */
-	public function posts_found( $single, $plural, $query ) {
-		// TODO.
-		$label = sprintf( _n( $single, $plural, $query->found_posts ), $query->found_posts ); // phpcs:ignore
+	public function posts_found( $single = '', $plural = '', $query = null ) {
+		if ( $query === null ) {
+			$query = $this->current_query;
+		}
+		$query_vars = $query->query_vars;
+
+		$page_total = (
+			$query_vars['posts_per_page'] < $query->found_posts
+			? $query_vars['posts_per_page']
+			: $query->found_posts
+		);
+
+		$page = array_key_exists( 'paged', $query_vars ) && $query_vars['paged'] ? $query_vars['paged'] : 1;
+
+		// Calculate paginated posts.
+		$current = ( $page - 1 ) * $page_total + 1;
+		$total   = $query->found_posts;
+		if ( ( $page_total * $page ) < $query->found_posts ) {
+			$total = ( $page_total * $page );
+		}
+
+		$found_string = sprintf( __( 'Showing %d-%d of %d', 'stella' ), $current, $total, $query->found_posts );
 
 		if ( wp_doing_ajax() ) {
-			echo '<terra-posts-found-label>' . esc_html( $label ) . '</terra-posts-found-label>';
+			echo '<lama-posts-found-label>' . $found_string . '</lama-posts-found-label>';
 		} else {
-			$this->hidden_terra_field( 'posts-found', 1 );
-			$this->hidden_terra_field( 'posts-found-single', $single );
-			$this->hidden_terra_field( 'posts-found-plural', $plural );
-
-			$hidden = '';
-
-			echo '<span class="terra-posts-found__label">' . esc_html( $label ) . '</span>';
+			echo '<input type="hidden" name="posts-found" value="1" />';
+			echo '<span class="lama-posts-found__label">' . $found_string . '</span>';
 		}
 	}
 
@@ -784,8 +811,8 @@ class Terra {
 	 * @param string $prefix string to prefix the log with.
 	 * @return void
 	 */
-	public function debug( $message, $prefix = '' ) {
-		$log = 'TERRA: ' . $prefix . print_r( $message, true );
+	public static function debug( $message, $prefix = '' ) {
+		$log = 'TERRA ALERT: ' . $prefix . print_r( $message, true );
 
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log( $log );

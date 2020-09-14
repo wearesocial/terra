@@ -157,7 +157,7 @@ class Terra {
 
 			self::debug( $posts->request, '(SQL) ' );
 
-			// $this->current_query = $posts; // TODO.
+			$this->current_query = $posts; // TODO.
 
 			// This is custom functionality to compile a list of all taxonomy terms for each post.
 			// This is later used in terra.js to disable dropdown options.
@@ -276,7 +276,7 @@ class Terra {
 
 			// Need to show the # of posts found?
 			if ( isset( $terra['posts-found'] ) ) {
-				$this->posts_found( $terra['posts-found-single'], $terra['posts-found-plural'], $posts );
+				$this->posts_found( $posts );
 			}
 			self::debug( 'HALLO: ' . $terra['posts-found'] );
 		}
@@ -763,9 +763,14 @@ class Terra {
 	 * @param string   $plural The text that will be used if $number is plural.
 	 * @param WP_Query $query the curent query object.
 	 */
-	public function posts_found( $single = '', $plural = '', $query = null ) {
+	public function posts_found( $query = null ) {
 		if ( $query === null ) {
-			$query = $this->current_query;
+			if ( $this->current_query ) {
+				$query = $this->current_query;
+			} else {
+				global $wp_query;
+				$query = $wp_query;
+			}
 		}
 		$query_vars = $query->query_vars;
 

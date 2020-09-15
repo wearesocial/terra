@@ -157,7 +157,8 @@ class Terra {
 
 			self::debug( $posts->request, '(SQL) ' );
 
-			$this->current_query = $posts; // TODO.
+			// Set $query for posts_found.
+			$this->current_query = $posts;
 
 			// This is custom functionality to compile a list of all taxonomy terms for each post.
 			// This is later used in terra.js to disable dropdown options.
@@ -275,10 +276,9 @@ class Terra {
 			}
 
 			// Need to show the # of posts found?
-			if ( isset( $terra['posts-found'] ) ) {
+			if ( isset( $terra['posts-found'] ) || isset( $params['posts-found'] ) ) {
 				$this->posts_found( $posts );
 			}
-			self::debug( 'HALLO: ' . $terra['posts-found'] );
 		}
 
 		// User can add some extra HTML after the loop, like pagination, etc.
@@ -788,14 +788,26 @@ class Terra {
 		if ( ( $page_total * $page ) < $query->found_posts ) {
 			$total = ( $page_total * $page );
 		}
+		// if ( $page === 1 ) {
+		// 	$total += $query->post_count;
+		// }
 
 		$found_string = sprintf( __( 'Showing %d-%d of %d', 'stella' ), $current, $total, $query->found_posts );
 
+		self::debug( 'page: ' . $page );
+		self::debug( 'current: ' . $current );
+		self::debug( 'posts_per_page: ' . $query_vars['posts_per_page'] );
+		self::debug( 'page_total: ' . $page_total );
+		self::debug( 'total: ' . $total );
+		self::debug( 'found_posts: ' . $query->found_posts );
+		self::debug( 'post_count: ' . $query->post_count );
+		self::debug( 'offset: ' . $query_vars['offset'] );
+
 		if ( wp_doing_ajax() ) {
-			echo '<lama-posts-found-label>' . $found_string . '</lama-posts-found-label>';
+			echo '<terra-posts-found-label>' . $found_string . '</terra-posts-found-label>';
 		} else {
 			echo '<input type="hidden" name="posts-found" value="1" />';
-			echo '<span class="lama-posts-found__label">' . $found_string . '</span>';
+			echo '<span class="terra-posts-found__label">' . $found_string . '</span>';
 		}
 	}
 

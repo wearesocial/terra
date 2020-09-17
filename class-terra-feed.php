@@ -113,7 +113,7 @@ class Terra_Feed extends Terra {
 		wp_enqueue_script( 'stella-terra' );
 
 		// Load utils and inject query.
-		$query       = isset( $options['query'] ) ? $options['query'] : false;
+		$query       = isset( $options['query'] ) ? $options['query'] : null;
 		$this->utils = new Terra_Utils( $query );
 
 		// If start is true create start() method.
@@ -121,7 +121,6 @@ class Terra_Feed extends Terra {
 			// Defaults.
 			$name       = isset( $options['name'] ) ? $options['name'] : false;
 			$class      = isset( $options['class'] ) ? $options['class'] : '';
-			$query      = isset( $options['query'] ) ? $options['query'] : null;
 			$template   = isset( $options['template'] ) ? $options['template'] : false;
 			$filter_tax = isset( $options['filter_tax'] ) ? $options['filter_tax'] : false;
 			$this->start( $name, $class, $query, $template, $filter_tax );
@@ -134,6 +133,9 @@ class Terra_Feed extends Terra {
 	/**
 	 * Generate the markup for the opening tag form.
 	 *
+	 * This methid can be called after the class is instantiated or by passing a true parameter
+	 * (and options) into the $terra->create_feed( $start, $options ) method.
+	 *
 	 * @param string   $name a name used to specify the current form.
 	 * @param string   $class a class to add to the form.
 	 * @param WP_Query $query the custom query used. This is needed to figure out if there are more posts to load.
@@ -143,6 +145,10 @@ class Terra_Feed extends Terra {
 	 * @throws \Exception Exception if 'name' parameter is empty.
 	 */
 	public function start( $name, $class = '', $query = null, $template = false, $filter_tax = false ) {
+		if ( $this->terra_init ) {
+			return;
+		}
+
 		global $wp_query;
 
 		if ( empty( $name ) ) {
@@ -221,9 +227,9 @@ class Terra_Feed extends Terra {
 	 * @param bool $show_pagination if true add the custom pagination.
 	 */
 	public function container_end( $show_pagination = false ) {
-		global $terra;
 		// The pagination has to be part of the container, as it has to be deleted for every request.
 		if ( $show_pagination ) {
+			global $terra;
 			$terra->pagination( $this->current_name, $this->current_query );
 		}
 
@@ -380,7 +386,8 @@ class Terra_Feed extends Terra {
 
 			foreach ( $meta_query as $id => $meta ) {
 				// If is not in the URL has to be applied.
-				if ( isset( $_GET[ 'meta-' . $meta['key'] ] ) ) {
+				$meta_key = isset( $meta['key'] ) ? $meta['key'] : '';
+				if ( isset( $_GET[ 'meta-' . $meta_key ] ) ) {
 					$to_ignore[] = 'meta_query';
 				} else {
 					$meta_to_apply[ $id ] = $meta;

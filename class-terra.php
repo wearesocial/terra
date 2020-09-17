@@ -3,6 +3,16 @@
  * This class is a rewrite of Lama: https://93digital.gitlab.io/lama/
  * This class helps to filter taxonomies via ajax (or XMLHttpRequest..?).
  *
+ * Currently the class needs to be instantiated and globalised in functions.php (we'll work on that later)
+ * eg:
+ * require get_template_directory() . '/terra/class-terra.php';
+ * require get_template_directory() . '/terra/class-terra-feed.php';
+ * require get_template_directory() . '/terra/class-terra-utils.php';
+ * function init_terra() {
+ *   GLOBALS['terra'] = new \Nine3\Terra( true );
+ * }
+ * add_action( 'init', __NAMESPACE__ . '\init_terra' );
+ *
  * @package stella
  */
 
@@ -58,7 +68,7 @@ class Terra {
 	 * Register and localize the script.
 	 */
 	public function register_script() {
-		$url = trailingslashit( str_replace( ABSPATH, home_url( '/' ), __DIR__ ) );
+		$url = trailingslashit( str_replace( ABSPATH, site_url( '/' ), __DIR__ ) );
 		// If we're debugging use /src - if production use /dist.
 		$dist = ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || $this->develop ) ? 'src/' : 'dist/';
 		wp_register_script( 'stella-terra', $url . $dist . 'terra.js', [ 'jquery' ], TERRA_VERSION, true );
@@ -759,11 +769,11 @@ class Terra {
 	 *
 	 * $this->current_query is used to get the # of posts found.
 	 *
+	 * @param WP_Query $query the curent query object.
 	 * @param string   $single The text that will be used if $number is 1.
 	 * @param string   $plural The text that will be used if $number is plural.
-	 * @param WP_Query $query the curent query object.
 	 */
-	public function posts_found( $query = null ) {
+	public function posts_found( $query = null, $single = '', $plural = '' ) {
 		if ( $query === null ) {
 			if ( $this->current_query ) {
 				$query = $this->current_query;
@@ -788,20 +798,20 @@ class Terra {
 		if ( ( $page_total * $page ) < $query->found_posts ) {
 			$total = ( $page_total * $page );
 		}
-		// if ( $page === 1 ) {
-		// 	$total += $query->post_count;
-		// }
 
-		$found_string = sprintf( __( 'Showing %d-%d of %d', 'stella' ), $current, $total, $query->found_posts );
+		// Calculate 'load more' loaded posts.
+		if ( $page === 1 && isset( $query_vars['offset'] ) ) {
+			$total += $query_vars['offset'];
 
-		self::debug( 'page: ' . $page );
-		self::debug( 'current: ' . $current );
-		self::debug( 'posts_per_page: ' . $query_vars['posts_per_page'] );
-		self::debug( 'page_total: ' . $page_total );
-		self::debug( 'total: ' . $total );
-		self::debug( 'found_posts: ' . $query->found_posts );
-		self::debug( 'post_count: ' . $query->post_count );
-		self::debug( 'offset: ' . $query_vars['offset'] );
+			if ( $total >= $query->found_posts ) {
+				$total = $query->found_posts;
+			}
+		}
+
+		if ( ! empty( $single ) || ! empty( $plural ) ) {
+			$name_string = ( $query->found_posts === 1 ) ? $single : $plural;
+		}
+		$found_string = sprintf( __( 'Showing %d-%d of %d %s', 'stella' ), $current, $total, $query->found_posts, $name_string );
 
 		if ( wp_doing_ajax() ) {
 			echo '<terra-posts-found-label>' . $found_string . '</terra-posts-found-label>';
@@ -813,6 +823,20 @@ class Terra {
 
 	/**
 	 * Initialise feed object
+	 *
+	 * Usage:
+	 * First get the globalised $terra class:
+	 * global $terra;
+	 *
+	 * A new feed instance can be created by running the method with no params:
+	 * $feed = $terra->create_feed();
+	 * We can then access Terra_Feed methods, eg: $feed->start( $params );
+	 *
+	 * Or we can instantiate the feed and run the start() method at the same time:
+	 * $feed = $terra->create_feed(
+	 *   true,
+	 *   $options_array
+	 * );
 	 *
 	 * @param bool  $start set to true to run start from inside the fee construct().
 	 * @param array $options for start().

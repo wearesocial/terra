@@ -203,8 +203,10 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
 
           if (foundPosts === 0 || terraOffset === foundPosts) {
             $form.addClass('terra-more--none');
+            $form.find('.terra-submit').hide();
           } else {
             $form.removeClass('terra-more--none');
+            $form.find('.terra-submit').show();
           }
           /**
            * Update the label for founded posts, if any.

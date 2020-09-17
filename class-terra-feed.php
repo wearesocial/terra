@@ -24,7 +24,6 @@ namespace Nine3;
  * - hidden_query_field()
  * - generate_hidden_fields()
  * - end()
- * - get_temp_data()
  */
 class Terra_Feed extends Terra {
 	/**

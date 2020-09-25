@@ -2,12 +2,11 @@
 /**
  * This class is a rewrite of Lama: https://93digital.gitlab.io/lama/
  * This class helps to filter taxonomies via ajax.
+ * 
+ * Install: composer require 93devs/terra:dev-master
  *
- * Currently the class needs to be instantiated and globalised in functions.php (we'll work on that later)
+ * The class needs to be instantiated and globalised in functions.php
  * eg:
- * require get_template_directory() . '/terra/class-terra.php';
- * require get_template_directory() . '/terra/class-terra-feed.php';
- * require get_template_directory() . '/terra/class-terra-utils.php';
  * function init_terra() {
  *   GLOBALS['terra'] = new \Nine3\Terra( true );
  * }
@@ -18,7 +17,7 @@
 
 namespace Nine3;
 
-define( 'TERRA_VERSION', '0.1.0' );
+define( 'TERRA_VERSION', '1.0.0' );
 
 /**
  * Filtering and load more class

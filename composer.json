@@ -1,7 +1,7 @@
 {
 	"name": "93devs/terra",
 	"description": "This class helps to filter post taxonomies via ajax",
-	"version": "dev-master",
+	"version": "master",
 	"minimum-stability": "dev",
 	"homepage": "https://bitbucket.org/vicLobins93/terra/",
 	"license": "MIT",

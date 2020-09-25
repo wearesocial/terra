@@ -1,7 +1,9 @@
 {
 	"name": "93devs/terra",
 	"description": "This class helps to filter post taxonomies via ajax",
-	"version": "1.0.0",
+	"version": "0.1.0",
+	"homepage": "https://bitbucket.org/vicLobins93/terra/",
+	"license": "MIT",
 	"dist": {
 			"url": "git@bitbucket.org:vicLobins93/terra.git",
 			"type": "git"

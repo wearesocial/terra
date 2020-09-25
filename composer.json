@@ -1,7 +1,7 @@
 {
 	"name": "93devs/terra",
 	"description": "This class helps to filter post taxonomies via ajax",
-	"version": "master",
+	"version": "dev-master",
 	"minimum-stability": "dev",
 	"homepage": "https://bitbucket.org/vicLobins93/terra/",
 	"license": "MIT",
@@ -12,5 +12,8 @@
 	"autoload": {
 			"classmap": ["class-terra.php", "class-terra-feed.php", "class-terra-utils.php"],
 			"exclude-from-classmap": ["phpcs.xml"]
+	},
+	"require": {
+		"php": ">=7.2"
 	}
 }

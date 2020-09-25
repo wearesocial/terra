@@ -145,7 +145,6 @@ $terra_items = new WP_Query(
 		?>
 
 		<?php
-		// echo '<input type="hidden" name="posts_per_page" value="6" />';
 		$feed->hidden_field( 'posts_per_page', $posts_per_page, '' );
 		$feed->end( $load_more );
 

@@ -58,7 +58,8 @@ class Terra {
 		// Terra will take care of applying the filters present in the url.
 		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ], 99, 1 );
 
-		// Register block type.
+		// Se up ACF and Register block type.
+		require_once __DIR__ . '/acf/custom-fields.php';
 		add_action( 'acf/init', [ $this, 'terra_block_init' ] );
 		add_filter( 'allowed_block_types', [ $this, 'terra_add_allowed_block_type' ], 10, 2 );
 		add_filter( 'acf/load_field/name=terra_post_type', [ $this, 'terra_populate_post_types' ] );

@@ -1,7 +1,7 @@
 <?php
 /**
  * This class is a rewrite of Lama: https://93digital.gitlab.io/lama/
- * This class helps to filter taxonomies via ajax (or XMLHttpRequest..?).
+ * This class helps to filter taxonomies via ajax.
  *
  * Currently the class needs to be instantiated and globalised in functions.php (we'll work on that later)
  * eg:

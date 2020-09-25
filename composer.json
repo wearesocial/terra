@@ -1,6 +1,11 @@
 {
 	"name": "93devs/terra",
+	"description": "This class helps to filter post taxonomies via ajax",
 	"version": "0.1.0",
+	"dist": {
+			"url": "git@bitbucket.org:vicLobins93/terra.git",
+			"type": "git"
+	},
 	"autoload": {
 			"classmap": ["class-terra.php"],
 			"exclude-from-classmap": ["phpcs.xml"]

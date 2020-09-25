@@ -25,7 +25,7 @@ $load_more      = false;
 
 if ( $end === 'pagination' ) {
 	$pagination = true;
-} elseif ( $end === 'load_morre' ) {
+} elseif ( $end === 'load_more' ) {
 	$load_more = true;
 }
 

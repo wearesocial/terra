@@ -1,0 +1,12 @@
+{
+	"name": "93devs/terra",
+	"version": "0.1.0",
+	"dist": {
+			"url": "git@bitbucket.org:93developers/terra.git",
+			"type": "git"
+	},
+	"autoload": {
+			"classmap": ["class-terra.php"],
+			"exclude-from-classmap": ["phpcs.xml"]
+	}
+}

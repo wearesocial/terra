@@ -112,6 +112,10 @@ class Terra_Utils {
 			);
 		}
 
+		if ( isset( $args['reverse'] ) && $args['reverse'] ) {
+			$terms = array_reverse( $terms );
+		}
+
 		$values = [];
 
 		foreach ( $terms as $term ) {

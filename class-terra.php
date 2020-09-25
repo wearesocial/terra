@@ -6,11 +6,7 @@
  * Install: composer require 93devs/terra:dev-master
  *
  * The class needs to be instantiated and globalised in functions.php
- * eg:
- * function init_terra() {
- *   GLOBALS['terra'] = new \Nine3\Terra( true );
- * }
- * add_action( 'init', __NAMESPACE__ . '\init_terra' );
+ * eg: GLOBALS['terra'] = new \Nine3\Terra( true );
  *
  * @package stella
  */
@@ -61,6 +57,12 @@ class Terra {
 
 		// Terra will take care of applying the filters present in the url.
 		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ], 99, 1 );
+
+		// Register block type.
+		add_action( 'acf/init', [ $this, 'terra_block_init' ] );
+		add_filter( 'allowed_block_types', [ $this, 'terra_add_allowed_block_type' ], 10, 2 );
+		add_filter( 'acf/load_field/name=terra_post_type', [ $this, 'terra_populate_post_types' ] );
+		add_filter( 'acf/load_field/name=terra_taxonomies', [ $this, 'terra_populate_taxonomies' ] );
 	}
 
 	/**
@@ -153,6 +155,12 @@ class Terra {
 
 		// Lets us modify the args for each form.
 		$args = apply_filters( 'terra_args__' . $name, $args, $params, $terra );
+
+		// Force posts_per_page.
+		// TODO.
+		if ( $params['posts_per_page'] ) {
+			$args['posts_per_page'] = $params['posts_per_page'];
+		}
 
 		self::debug( 'WP_Query arguments applied:' );
 		self::debug( $args );
@@ -360,6 +368,10 @@ class Terra {
 			if ( isset( $_GET['posts-offset'] ) ) {
 				unset( $_GET['posts-offset'] );
 			}
+			// TODO.
+			if ( isset( $_GET['posts_per_page'] ) ) {
+				unset( $_GET['posts_per_page'] );
+			}
 
 			$args = $this->filter_wp_query( $args, $_GET );
 			$args = apply_filters( 'terra_args__' . $this->current_name, $args, $_GET, [] );
@@ -516,6 +528,7 @@ class Terra {
 		/**
 		 * Offset conflicts with 'paged', can't use both.
 		 * Also offset have to be used only when clicking the LOAD MORE button.
+		 * TODO
 		 */
 		$append = $_POST['terraAppend'] ?? false; // phpcs:ignore
 		self::debug( $append, 'Append: ' );
@@ -842,6 +855,81 @@ class Terra {
 	 */
 	public function create_feed( $start = false, $options = null ) {
 		return new \Nine3\Terra_Feed( $start, $options );
+	}
+
+	/**
+	 * Define new custom block for the Terra Feed.
+	 */
+	public function terra_block_init() {
+		// Check function exists.
+    if ( function_exists( 'acf_register_block_type' ) ) {
+			// Register a terra block.
+			acf_register_block_type(
+				[
+					'name'            => 'terra-feed',
+					'title'           => __( 'Terra Feed', 'stella' ),
+					'description'     => __( 'Creates a feed for display of filtered posts.', 'stella' ),
+					'post_types' 		  => [ 'page' ],
+					'render_template' => __DIR__ . '/templates/feed-block.php',
+					'category'        => 'widgets',
+				]
+			);
+		}
+	}
+
+	/**
+	 * Add block to list of allowed.
+	 *
+	 * @param array   $allowed_block_types the array list of block types.
+	 * @param WP_Post $post the post object.
+	 */
+	public function terra_add_allowed_block_type( $allowed_block_types, $post ) {
+		array_push( $allowed_block_types, 'acf/terra-feed' );
+    return $allowed_block_types;
+	}
+
+	/**
+	 * Populate custom select field with post types from theme.
+	 *
+	 * @param array $field the array of field values.
+	 */
+	public function terra_populate_post_types( $field ) {
+		// Reset choices.
+    $field['choices'] = [];
+    
+    // Get CPTs.
+		$post_types = get_post_types( [ 'public' => true ] );
+
+    // Loop through array and add to field 'choices'.
+    if ( is_array( $post_types ) ) { 
+			foreach ( $post_types as $type ) {
+				$field['choices'][ $type ] = $type;
+			} 
+    }
+
+    return $field;
+	}
+
+	/**
+	 * Populate custom select field with taxonomies from theme.
+	 *
+	 * @param array $field the array of field values.
+	 */
+	public function terra_populate_taxonomies( $field ) {
+		// Reset choices.
+    $field['choices'] = [];
+    
+    // Get CPTs.
+		$taxonomies = $tax = get_taxonomies( [ 'public' => true ] );
+
+    // Loop through array and add to field 'choices'.
+    if ( is_array( $taxonomies ) ) { 
+			foreach ( $taxonomies as $tax ) {
+				$field['choices'][ $tax ] = $tax;
+			} 
+    }
+
+    return $field;
 	}
 
 	/**

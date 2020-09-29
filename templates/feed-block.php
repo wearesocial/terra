@@ -29,12 +29,17 @@ if ( $end === 'pagination' ) {
 	$load_more = true;
 }
 
-$terra_items = new WP_Query(
-	[
-		'posts_per_page' => $posts_per_page,
-		'post_type'      => $post_type,
-	]
-);
+$terra_args = [
+	'posts_per_page' => $posts_per_page,
+	'post_type'      => $post_type,
+	'terra'          => $post_type . '-feed',
+];
+
+if ( function_exists( 'pll_current_language' ) ) {
+	$terra_args['lang'] = pll_current_language();
+}
+
+$terra_items = new WP_Query( $terra_args );
 
 ?>
 

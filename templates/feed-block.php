@@ -23,6 +23,18 @@ $end            = get_field( 'terra_end' );
 $pagination     = false;
 $load_more      = false;
 
+if ( $sort === 'date' ) {
+	$sort_values = [
+		'DESC' => __( 'Newest first', 'stella' ),
+		'ASC'  => __( 'Oldest first', 'stella' ),
+	];
+} else {
+	$sort_values = [
+		'ASC'  => __( 'A - Z', 'stella' ),
+		'DESC' => __( 'Z - A', 'stella' ),
+	];
+}
+
 if ( $end === 'pagination' ) {
 	$pagination = true;
 } elseif ( $end === 'load_more' ) {
@@ -33,6 +45,8 @@ $terra_args = [
 	'posts_per_page' => $posts_per_page,
 	'post_type'      => $post_type,
 	'terra'          => $post_type . '-feed',
+	'orderby'        => $sort,
+	'order'          => $sort === 'date' ? 'DESC' : 'ASC',
 ];
 
 if ( function_exists( 'pll_current_language' ) ) {
@@ -124,14 +138,11 @@ $terra_items = new WP_Query( $terra_args );
 				<?php
 				$feed->utils->add_dropdown_filter(
 					[
-						'name'         => 'sort',
-						'class'        => 'filter-sort',
-						'placeholder'  => false,
-						'clearable'    => false,
-						'values'       => [
-							'DESC' => __( 'Newest - Oldest', 'stella' ),
-							'ASC'  => __( 'Oldest - Newest', 'stella' ),
-						],
+						'name'        => 'sort',
+						'class'       => 'filter-sort',
+						'placeholder' => false,
+						'clearable'   => false,
+						'values'      => $sort_values,
 					]
 				);
 				?>

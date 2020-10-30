@@ -86,7 +86,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
      */
 
     values.forEach(function (value) {
-      if (value.indexOf('posts-') === -1 && value.indexOf('query-') === -1) {
+      if (value.indexOf('posts-') === -1 && value.indexOf('query-') === -1 && value.indexOf('posts_per') === -1) {
         var parts = value.split('=');
         var v = parts[0]; // If the key already exists in the URL need to remove it from the latter.
 

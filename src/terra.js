@@ -158,7 +158,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
       uid: $form.data('uid')
     };
     $form.removeClass('terra--done');
-    console.log(data);
+    // console.log(data);
     request = $.ajax({
       // eslint-disable-line
       type: 'POST',

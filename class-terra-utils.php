@@ -77,6 +77,33 @@ class Terra_Utils {
 	}
 
 	/**
+	 * Helper function to simplify rendering taxonomy filters.
+	 *
+	 * @param array $tax_array array given of tax and label to loop through.
+	 */
+	public function loop_taxonomy_filters( array $tax_array ) {
+		foreach ( $tax_array as $tax => $args ) :
+			ob_start();
+			?>
+			<div class="archive-container__filter-wrap">
+				<label class="archive-container__label" for="filter-<?php echo esc_html( $tax ); ?>"><?php echo esc_html( $args['single'] ); ?></label>
+				<?php
+				$this->add_taxonomy_filter(
+					$tax,
+					[
+						'class'       => 'filter-select archive-container__filter',
+						'placeholder' => $args['plural'],
+						'hide_empty'  => true,
+					]
+				);
+				?>
+			</div>
+			<?php
+			ob_get_flush();
+		endforeach;
+	}
+
+	/**
 	 * Generate the Terra filters from specified taxonomy.
 	 *
 	 * @param string $taxonomy the taxonomy to filter.
@@ -471,5 +498,13 @@ class Terra_Utils {
 		if ( isset( $args['container_class'] ) ) {
 			echo '</div>';
 		}
+	}
+
+	/**
+	 * Silly helper function to keep things a bit tidier in the template.
+	 */
+	public function posts_found() {
+		global $terra;
+		$terra->posts_found();
 	}
 }

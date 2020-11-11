@@ -884,6 +884,10 @@ class Terra {
 	 * @param WP_Post $post the post object.
 	 */
 	public function terra_add_allowed_block_type( $allowed_block_types, $post ) {
+		if ( ! $allowed_block_types || ! is_array( $allowed_block_types ) ) {
+			return;
+		}
+
 		array_push( $allowed_block_types, 'acf/terra-feed' );
     return $allowed_block_types;
 	}

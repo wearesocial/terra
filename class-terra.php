@@ -817,6 +817,7 @@ class Terra {
 			}
 		}
 
+		$name_string = '';
 		if ( ! empty( $single ) || ! empty( $plural ) ) {
 			$name_string = ( $query->found_posts === 1 ) ? $single : $plural;
 		}

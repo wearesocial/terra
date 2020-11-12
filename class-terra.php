@@ -556,7 +556,7 @@ class Terra {
 	private function modify_wp_query_args( $args, $taxonomies = [], $meta = [] ) {
 		// Append the taxonomy term.
 		if ( isset( $args['taxonomy'] ) && isset( $args['term_taxonomy_id'] ) ) {
-			$tax_query[] = [
+			$args['tax_query'][] = [
 				'taxonomy' => $args['taxonomy'],
 				'field'    => 'term_id',
 				'terms'    => array( (int) $args['term_taxonomy_id'] ),
@@ -566,33 +566,30 @@ class Terra {
 			unset( $args['term_taxonomy_id'] );
 		}
 
-		// Check if there is any taxonomy to filter.
-		if ( ! isset( $args['tax_query'] ) || ! is_array( $args['tax_query'] ) ) {
-			$args['tax_query'] = [];
-		}
-
 		self::debug( $taxonomies, '$taxonomies ' );
 
-		foreach ( $taxonomies as $taxonomy => $values ) {
-			if ( is_array( $values ) ) {
-				$values = array_filter( $values );
+		if ( ! empty( $taxonomies ) ) {
+			foreach ( $taxonomies as $taxonomy => $values ) {
+				if ( is_array( $values ) ) {
+					$values = array_filter( $values );
+				}
+
+				if ( empty( $values ) ) {
+					continue;
+				}
+
+				$tq = [
+					'taxonomy' => $taxonomy,
+					'field'    => 'slug',
+					'terms'    => $values,
+				];
+
+				if ( is_array( $values ) ) {
+					$tq['compare'] = 'IN';
+				}
+
+				$args['tax_query'][] = $tq;
 			}
-
-			if ( empty( $values ) ) {
-				continue;
-			}
-
-			$tq = [
-				'taxonomy' => $taxonomy,
-				'field'    => 'slug',
-				'terms'    => $values,
-			];
-
-			if ( is_array( $values ) ) {
-				$tq['compare'] = 'IN';
-			}
-
-			$args['tax_query'][] = $tq;
 		}
 
 		/**

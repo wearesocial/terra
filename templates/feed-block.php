@@ -6,8 +6,11 @@
  */
 global $terra;
 
+$pre_filtered   = get_field( 'terra_pre_filter' );
 $post_type      = get_field( 'terra_post_type' );
 $post_type      = ! empty( $post_type ) ? $post_type : 'post';
+$name           = get_field( 'terra_name' );
+$name           = ! empty( $name ) ? $name : $post_type . '-feed';
 $posts_per_page = get_field( 'terra_posts_per_page' );
 $posts_per_page = ! empty( $posts_per_page ) ? $posts_per_page : get_option( 'posts_per_page' );
 $class          = get_field( 'terra_class' );
@@ -44,14 +47,30 @@ if ( $end === 'pagination' ) {
 $terra_args = [
 	'posts_per_page' => $posts_per_page,
 	'post_type'      => $post_type,
-	'terra'          => $post_type . '-feed',
+	'terra'          => $name,
 	'orderby'        => $sort,
 	'order'          => $sort === 'date' ? 'DESC' : 'ASC',
 ];
 
+if ( $pre_filtered ) {
+	$taxonomy = get_field( 'terra_taxonomies' );
+	$term     = get_field( 'terra_term' );
+
+	$terra_args['tax_query'] = [
+		[
+			'taxonomy' => $taxonomy,
+			'field'    => 'name',
+			'terms'    => $term,
+		]
+	];
+}
+
 if ( function_exists( 'pll_current_language' ) ) {
 	$terra_args['lang'] = pll_current_language();
 }
+
+// Allow modification of args.
+$terra_args = apply_filters( 'terra_block_args__' . $name, $terra_args, $name );
 
 $terra_items = new WP_Query( $terra_args );
 
@@ -65,7 +84,7 @@ $terra_items = new WP_Query( $terra_args );
 		$feed = $terra->create_feed(
 			true,
 			[
-				'name'     => $post_type . '-feed',
+				'name'     => $name,
 				'class'    => 'archive__wrapper',
 				'query'    => $terra_items,
 				'template' => [

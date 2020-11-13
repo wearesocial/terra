@@ -85,7 +85,7 @@ $terra_items = new WP_Query( $terra_args );
 			true,
 			[
 				'name'     => $name,
-				'class'    => 'archive__wrapper',
+				'class'    => 'archive-container__wrapper',
 				'query'    => $terra_items,
 				'template' => [
 					'single' => $template,
@@ -95,18 +95,19 @@ $terra_items = new WP_Query( $terra_args );
 		);
 		?>
 
-		<header class="archive__filters">
+		<header class="archive-container__filters">
+			<h4 class="archive-container__filters--heading"><?php esc_html_e( 'Filter by', 'stella' ); ?></h4>
 			<?php
 			if ( $filters ) :
 				foreach ( $filters as $filter ) :
 					?>
-					<div class="archive__filter-wrap">
-						<label class="archive__filter-label" for="filter-<?php echo esc_html( $filter['terra_taxonomies'] ); ?>"><?php echo esc_html( $filter['label'] ); ?></label>
+					<div class="archive-container__filter-wrap">
+						<label class="archive-container__filter-label" for="filter-<?php echo esc_html( $filter['terra_taxonomies'] ); ?>"><?php echo esc_html( $filter['label'] ); ?></label>
 						<?php
 						$feed->utils->add_taxonomy_filter(
 							$filter['terra_taxonomies'],
 							[
-								'class'       => 'filter-select archive__filter',
+								'class'       => 'filter-select archive-container__filter',
 								'placeholder' => esc_html( $filter['placeholder'] ),
 								'hide_empty'  => true,
 							]
@@ -119,13 +120,13 @@ $terra_items = new WP_Query( $terra_args );
 
 			if ( $search ) :
 				?>
-				<div class="archive__filter-wrap archive__filter-wrap--search">
-					<label class="archive__label" for="filter-search"><?php esc_html_e( 'Search', 'stella' ); ?></label>
+				<div class="archive-container__filter-wrap archive-container__filter-wrap--search">
+					<label class="archive-container__label" for="filter-search"><?php esc_html_e( 'Search', 'stella' ); ?></label>
 					<?php
 					$feed->utils->add_search_filter(
 						[
 							'placeholder' => __( 'Enter search term', 'stella' ),
-							'class'       => 'filter-search archive__search',
+							'class'       => 'filter-search archive-container__search',
 						]
 					);
 					?>
@@ -134,50 +135,52 @@ $terra_items = new WP_Query( $terra_args );
 			endif;
 			?>
 
-			<button type="reset" value="" class="archive__reset">
+			<button type="reset" value="" class="archive-container__reset">
 				<?php esc_html_e( 'Reset' ); ?>
 			</button>
 		</header>
 
-		<div class="archive__sorting">
-			<?php
-			if ( $post_count ) :
-				?>
-				<div class="archive__sorting--count">
+		<div class="container">
+			<div class="archive-sorting">
+				<?php
+				if ( $post_count ) :
+					?>
+					<div class="archive-sorting__count">
+						<?php
+						$terra->posts_found( $terra_items );
+						?>
+					</div>
 					<?php
-					$terra->posts_found( $terra_items );
+				endif;
+				?>
+
+				<div class="archive-sorting__input">
+					<label for="filter-sort"><?php esc_html_e( 'Sort:', 'stella' ); ?></label>
+					<?php
+					$feed->utils->add_dropdown_filter(
+						[
+							'name'        => 'sort',
+							'class'       => 'archive-sorting__sort',
+							'placeholder' => false,
+							'clearable'   => false,
+							'values'      => $sort_values,
+						]
+					);
 					?>
 				</div>
-				<?php
-			endif;
-			?>
-
-			<div class="archive__sorting--input">
-				<label for="filter-sort"><?php esc_html_e( 'Sort:', 'stella' ); ?></label>
-				<?php
-				$feed->utils->add_dropdown_filter(
-					[
-						'name'        => 'sort',
-						'class'       => 'filter-sort',
-						'placeholder' => false,
-						'clearable'   => false,
-						'values'      => $sort_values,
-					]
-				);
-				?>
 			</div>
+
+			<?php
+			$feed->container_start( 'archive-container__items archive-container__items--' . $post_type );
+
+			while ( $terra_items->have_posts() ) :
+				$terra_items->the_post();
+				get_template_part( $template );
+			endwhile;
+
+			$feed->container_end( $pagination );
+			?>
 		</div>
-
-		<?php
-		$feed->container_start( 'archive__items archive__items--' . $post_type );
-
-		while ( $terra_items->have_posts() ) :
-			$terra_items->the_post();
-			get_template_part( $template );
-		endwhile;
-
-		$feed->container_end( $pagination );
-		?>
 
 		<?php
 		$feed->hidden_field( 'posts_per_page', $posts_per_page, '' );

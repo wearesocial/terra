@@ -821,7 +821,7 @@ class Terra {
 		if ( ! empty( $single ) || ! empty( $plural ) ) {
 			$name_string = ( $query->found_posts === 1 ) ? $single : $plural;
 		}
-		$found_string = sprintf( __( 'Showing %d-%d of %d %s', 'stella' ), $current, $total, $query->found_posts, $name_string );
+		$found_string = sprintf( __( 'Showing %d-%d of <strong>%d</strong> %s', 'stella' ), $current, $total, $query->found_posts, $name_string );
 
 		if ( wp_doing_ajax() ) {
 			echo '<terra-posts-found-label>' . $found_string . '</terra-posts-found-label>';

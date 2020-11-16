@@ -2,12 +2,12 @@
 /**
  * Pagination template
  *
- * This module can be override using the `lama_pagination` filters.
+ * This module can be override using the `terra_pagination` filters.
  *
  * @used by:
  *  - public static function pagination
  *
- * @package Lama
+ * @package stella
  */
 
 use function Nine3\Stella\Icons\svg;

@@ -95,50 +95,52 @@ $terra_items = new WP_Query( $terra_args );
 		);
 		?>
 
-		<header class="archive-container__filters">
-			<h4 class="archive-container__filters--heading"><?php esc_html_e( 'Filter by', 'stella' ); ?></h4>
-			<?php
-			if ( $filters ) :
-				foreach ( $filters as $filter ) :
-					?>
-					<div class="archive-container__filter-wrap">
-						<label class="archive-container__filter-label" for="filter-<?php echo esc_html( $filter['terra_taxonomies'] ); ?>"><?php echo esc_html( $filter['label'] ); ?></label>
+		<?php if ( $filters || $search ) : ?>
+			<header class="archive-container__filters">
+				<h4 class="archive-container__filters--heading"><?php esc_html_e( 'Filter by', 'stella' ); ?></h4>
+				<?php
+				if ( $filters ) :
+					foreach ( $filters as $filter ) :
+						?>
+						<div class="archive-container__filter-wrap">
+							<label class="archive-container__filter-label" for="filter-<?php echo esc_html( $filter['terra_taxonomies'] ); ?>"><?php echo esc_html( $filter['label'] ); ?></label>
+							<?php
+							$feed->utils->add_taxonomy_filter(
+								$filter['terra_taxonomies'],
+								[
+									'class'       => 'filter-select archive-container__filter',
+									'placeholder' => esc_html( $filter['placeholder'] ),
+									'hide_empty'  => true,
+								]
+							);
+							?>
+						</div>
 						<?php
-						$feed->utils->add_taxonomy_filter(
-							$filter['terra_taxonomies'],
+					endforeach;
+				endif;
+
+				if ( $search ) :
+					?>
+					<div class="archive-container__filter-wrap archive-container__filter-wrap--search">
+						<label class="archive-container__label" for="filter-search"><?php esc_html_e( 'Search', 'stella' ); ?></label>
+						<?php
+						$feed->utils->add_search_filter(
 							[
-								'class'       => 'filter-select archive-container__filter',
-								'placeholder' => esc_html( $filter['placeholder'] ),
-								'hide_empty'  => true,
+								'placeholder' => __( 'Enter search term', 'stella' ),
+								'class'       => 'filter-search archive-container__search',
 							]
 						);
 						?>
 					</div>
 					<?php
-				endforeach;
-			endif;
-
-			if ( $search ) :
+				endif;
 				?>
-				<div class="archive-container__filter-wrap archive-container__filter-wrap--search">
-					<label class="archive-container__label" for="filter-search"><?php esc_html_e( 'Search', 'stella' ); ?></label>
-					<?php
-					$feed->utils->add_search_filter(
-						[
-							'placeholder' => __( 'Enter search term', 'stella' ),
-							'class'       => 'filter-search archive-container__search',
-						]
-					);
-					?>
-				</div>
-				<?php
-			endif;
-			?>
 
-			<button type="reset" value="" class="archive-container__reset">
-				<?php esc_html_e( 'Reset' ); ?>
-			</button>
-		</header>
+				<button type="reset" value="" class="archive-container__reset">
+					<?php esc_html_e( 'Reset' ); ?>
+				</button>
+			</header>
+		<?php endif; ?>
 
 		<div class="container">
 			<div class="archive-sorting">

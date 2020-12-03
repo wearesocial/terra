@@ -159,7 +159,7 @@ class Terra {
 
 		// Force posts_per_page.
 		// TODO.
-		if ( $params['posts_per_page'] ) {
+		if ( isset( $params['posts_per_page'] ) ) {
 			$args['posts_per_page'] = $params['posts_per_page'];
 		}
 

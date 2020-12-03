@@ -68,7 +68,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
    */
 
 
-  function updateUrl(formData) {
+  function updateUrl(formData, formName) {
     var values = formData.split('&');
     var urlData = [];
     var queryUrl = '';
@@ -108,7 +108,12 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
      * So lets explicitly set the base url.
      */
 
-    queryUrl = terra.archiveurl;
+    if (formName.indexOf('-feed') === -1) {
+      queryUrl = terra.archiveurl;
+    } else {
+      queryUrl = location.protocol + '//' + location.host + location.pathname;
+    }
+
     /**
      * If `parameters` contains only `query=` there is nothing to do here
      */
@@ -284,7 +289,7 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
      * Update the URL with the filters selected
      */
 
-    updateUrl(formData);
+    updateUrl(formData, form.name);
     /**
      * Perform the ajax request
      */

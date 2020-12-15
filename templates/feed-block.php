@@ -38,6 +38,10 @@ if ( $sort === 'date' ) {
 	];
 }
 
+if ( $sort === 'menu_order' ) {
+	array_unshift( $sort_values, __( 'Default', 'stella' ) );
+}
+
 if ( $end === 'pagination' ) {
 	$pagination = true;
 } elseif ( $end === 'load_more' ) {

@@ -141,7 +141,7 @@ $terra_items = new WP_Query( $terra_args );
 				?>
 
 				<button type="reset" value="" class="archive-container__reset">
-					<?php esc_html_e( 'Reset' ); ?>
+					<?php esc_html_e( 'Reset', 'stella' ); ?>
 				</button>
 			</header>
 		<?php endif; ?>

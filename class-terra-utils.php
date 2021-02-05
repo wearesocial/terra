@@ -270,7 +270,7 @@ class Terra_Utils {
 		 * if the the arg is a string then it is used as the option's label.
 		 */
 		if ( $args['clearable'] ) {
-			$label = is_string( $args['clearable'] ) ? $args['clearable'] : 'Show all';
+			$label = is_string( $args['clearable'] ) ? $args['clearable'] : __( 'Show all', 'stella' );
 			if ( $args['custom-name'] ) {
 				$args['values'] = [ 'null' => $label ] + $args['values'];
 			} else {

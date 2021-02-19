@@ -52,7 +52,7 @@ $terra_args = [
 	'posts_per_page' => $posts_per_page,
 	'post_type'      => $post_type,
 	'terra'          => $name,
-	'orderby'        => $sort,
+	'orderby'        => $sort === 'disable' ? 'title' : $sort,
 	'order'          => $sort === 'date' ? 'DESC' : 'ASC',
 ];
 
@@ -160,20 +160,22 @@ $terra_items = new WP_Query( $terra_args );
 				endif;
 				?>
 
-				<div class="archive-sorting__input">
-					<label for="filter-sort"><?php esc_html_e( 'Sort:', 'stella' ); ?></label>
-					<?php
-					$feed->utils->add_dropdown_filter(
-						[
-							'name'        => 'sort',
-							'class'       => 'archive-sorting__sort',
-							'placeholder' => false,
-							'clearable'   => false,
-							'values'      => $sort_values,
-						]
-					);
-					?>
-				</div>
+				<?php if ( $sort !== 'disable' ) : ?>
+					<div class="archive-sorting__input">
+						<label for="filter-sort"><?php esc_html_e( 'Sort:', 'stella' ); ?></label>
+						<?php
+						$feed->utils->add_dropdown_filter(
+							[
+								'name'        => 'sort',
+								'class'       => 'archive-sorting__sort',
+								'placeholder' => false,
+								'clearable'   => false,
+								'values'      => $sort_values,
+							]
+						);
+						?>
+					</div>
+				<?php endif; ?>
 			</div>
 
 			<?php

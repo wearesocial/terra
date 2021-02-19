@@ -345,6 +345,7 @@ if ( function_exists('acf_add_local_field_group') ) :
 					'id' => '',
 				),
 				'choices' => array(
+					'disable' => 'Disable',
 					'date' => 'Date',
 					'title' => 'Title',
 					'menu_order' => 'Menu Order (Post Types Order plugin)',

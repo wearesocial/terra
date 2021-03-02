@@ -6,6 +6,7 @@
  */
 global $terra;
 
+$multiple       = get_field( 'terra_multiple_feeds' );
 $pre_filtered   = get_field( 'terra_pre_filter' );
 $post_type      = get_field( 'terra_post_type' );
 $post_type      = ! empty( $post_type ) ? $post_type : 'post';
@@ -147,20 +148,20 @@ $terra_items = new WP_Query( $terra_args );
 		<?php endif; ?>
 
 		<div class="container">
-			<div class="archive-sorting">
-				<?php
-				if ( $post_count ) :
-					?>
-					<div class="archive-sorting__count">
-						<?php
-						$terra->posts_found( $terra_items );
-						?>
-					</div>
+			<?php if ( $post_count || $sort !== 'disable' ) : ?>
+				<div class="archive-sorting">
 					<?php
-				endif;
-				?>
+					if ( $post_count ) :
+						?>
+						<div class="archive-sorting__count">
+							<?php
+							$terra->posts_found( $terra_items );
+							?>
+						</div>
+						<?php
+					endif;
+					?>
 
-				<?php if ( $sort !== 'disable' ) : ?>
 					<div class="archive-sorting__input">
 						<label for="filter-sort"><?php esc_html_e( 'Sort:', 'stella' ); ?></label>
 						<?php
@@ -186,7 +187,7 @@ $terra_items = new WP_Query( $terra_args );
 				get_template_part( $template );
 			endwhile;
 
-			$feed->container_end( $pagination );
+			$feed->container_end( $pagination, $multiple );
 			?>
 		</div>
 

@@ -212,7 +212,7 @@ class Terra_Feed extends Terra {
 	 *
 	 * @param string $class the extra class to use for the container.
 	 */
-	public function container_start( $class = '' ) {
+	public function container_start( $class = '') {
 		printf(
 			'<div id="%s" class="terra-container %s">',
 			esc_attr( $this->current_name ),
@@ -224,12 +224,12 @@ class Terra_Feed extends Terra {
 	 * The end of the container.
 	 *
 	 * @param bool $show_pagination if true add the custom pagination.
+	 * @param bool   $multiple whether we have several feeds on one page, default = false.
 	 */
-	public function container_end( $show_pagination = false ) {
+	public function container_end( $show_pagination = false, $multiple = false  ) {
 		// The pagination has to be part of the container, as it has to be deleted for every request.
 		if ( $show_pagination ) {
-			global $terra;
-			$terra->pagination( $this->current_name, $this->current_query );
+			$this->pagination( $this->current_name, $this->current_query, true, [], $multiple );
 		}
 
 		echo '</div>';

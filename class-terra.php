@@ -356,6 +356,11 @@ class Terra {
 
 				$current_page = max( 1, get_query_var( 'paged' ) );
 
+				// This is needed if we have 2 archives on the same page.
+				if ( isset( $_GET['terra'] ) && $query->query_vars['terra'] !== $_GET['terra'] ) {
+					$current_page = 1;
+				}
+
 				if ( $current_page > 1 ) {
 					$args['paged'] = $current_page;
 				}
@@ -694,7 +699,7 @@ class Terra {
 	 * @param array    $params the pagination options.
 	 * @return void
 	 */
-	public function pagination( $current_name, $query, $show_ends = true, $params = [] ) {
+	public function pagination( $current_name, $query, $show_ends = true, $params = [], $multiple = false ) {
 		global $wp_query, $wp;
 
 		// Needed by the pagination template.
@@ -706,6 +711,11 @@ class Terra {
 		}
 
 		$current_page = max( 1, get_query_var( 'paged' ) );
+
+		// This is needed if we have 2 archives on the same page.
+		if ( $multiple && isset( $_GET['terra'] ) && $query->query_vars['terra'] !== $_GET['terra'] ) {
+			$current_page = 1;
+		}
 
 		// Get any custom $_GET params from the url, these will be appended to page links further down.
 		$custom_params = count( $_GET ) > 0 ? '?' . http_build_query( $_GET ) : '';
@@ -756,6 +766,10 @@ class Terra {
 			'prev_text' => esc_html( 'Prev', 'stella' ),
 			'next_text' => esc_html( 'Next', 'stella' ),
 		];
+
+		if ( $multiple ) {
+			$args['add_args'] = [ 'terra' => $current_name ];
+		}
 
 		$args = apply_filters( 'terra_pagination_args', $args, $show_ends, $params );
 		$args = apply_filters( 'terra_pagination_args__' . $current_name, $args, $show_ends, $params );

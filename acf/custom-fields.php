@@ -5,6 +5,25 @@ if ( function_exists('acf_add_local_field_group') ) :
 		'title' => 'Terra Feed',
 		'fields' => array(
 			array(
+				'key' => 'field_603e1d936d307',
+				'label' => 'Multiple feeds?',
+				'name' => 'terra_multiple_feeds',
+				'type' => 'true_false',
+				'instructions' => 'Enable this on all feed blocks if you\'re having multiple feeds on one page.',
+				'required' => 0,
+				'conditional_logic' => 0,
+				'wrapper' => array(
+					'width' => '',
+					'class' => '',
+					'id' => '',
+				),
+				'message' => '',
+				'default_value' => 0,
+				'ui' => 0,
+				'ui_on_text' => '',
+				'ui_off_text' => '',
+			),
+			array(
 				'key' => 'field_5fad2bd652c89',
 				'label' => 'Pre filter posts on load?',
 				'name' => 'terra_pre_filter',

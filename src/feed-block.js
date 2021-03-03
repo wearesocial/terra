@@ -6,7 +6,7 @@
     }
 
     element.addEventListener('click', e => {
-      waitForElement('.acf-block-fields', function(settingsElement){
+      waitForElement('.acf-block-fields', settingsElement => {
         doSettingsChanges(settingsElement);
       });
     });

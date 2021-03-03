@@ -161,7 +161,6 @@ class Terra {
 		$args = apply_filters( 'terra_args__' . $name, $args, $params, $terra );
 
 		// Force posts_per_page.
-		// TODO.
 		if ( isset( $params['posts_per_page'] ) ) {
 			$args['posts_per_page'] = $params['posts_per_page'];
 		}
@@ -542,6 +541,10 @@ class Terra {
 		self::debug( $append, 'Append: ' );
 		if ( $append === 'true' && isset( $params['posts-offset'] ) ) {
 			$args['offset'] = intval( $params['posts-offset'] );
+		}
+
+		if ( isset( $args['terra-feed'] ) ) {
+			$args['tax_query'] = [];
 		}
 
 		$args = $this->modify_wp_query_args( $args, $taxonomies, $meta );
@@ -983,7 +986,7 @@ class Terra {
 				);
 
 				foreach ( $terms as $term ) {
-					$tax_terms[ $tax ][ $term->slug ] = $term->name;
+					$tax_terms[ $tax ][ $term->term_id ] = $term->name;
 				}
 			} 
     }

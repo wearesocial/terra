@@ -70,6 +70,7 @@ $terra_args = [
 	'terra'          => $name,
 	'orderby'        => $sort === 'disable' ? 'title' : $sort,
 	'order'          => $sort === 'date' ? 'DESC' : 'ASC',
+	'terra-feed'     => true,
 ];
 
 if ( $pre_filtered ) {
@@ -79,7 +80,7 @@ if ( $pre_filtered ) {
 	$terra_args['tax_query'] = [
 		[
 			'taxonomy' => $taxonomy,
-			'field'    => 'slug',
+			'field'    => 'id',
 			'terms'    => $term,
 		]
 	];
@@ -132,7 +133,7 @@ $terra_items = new WP_Query( $terra_args );
 							];
 
 							if ( $taxonomy && $term && $taxonomy === $filter['terra_taxonomies'] ) {
-								$tax_args['selected'] = $term;
+								$tax_args['selected'] = get_term( $term )->slug;
 							}
 
 							$feed->utils->add_taxonomy_filter(

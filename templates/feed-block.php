@@ -15,10 +15,6 @@ $name           = ! empty( $name ) ? $name : $post_type . '-feed';
 $posts_per_page = get_field( 'terra_posts_per_page' );
 $posts_per_page = ! empty( $posts_per_page ) ? $posts_per_page : get_option( 'posts_per_page' );
 $class          = get_field( 'terra_class' );
-$template       = get_field( 'terra_template' );
-$template       = ! empty( $template ) ? $template : 'template-parts/' . $post_type . '-single-item';
-$template_none  = get_field( 'terra_template_none' );
-$template_none  = ! empty( $template_none ) ? $template_none : 'template-parts/content-none';
 $filters        = get_field( 'terra_filters' );
 $search         = get_field( 'terra_search' );
 $post_count     = get_field( 'terra_post_count' );
@@ -26,6 +22,25 @@ $sort           = get_field( 'terra_sort' );
 $end            = get_field( 'terra_end' );
 $pagination     = false;
 $load_more      = false;
+
+// Set up templates.
+$template        = 'template-parts/' . $post_type . '-single-item';
+$template_select = get_field( 'terra_template_select' );
+if ( $template_select && $template_select !== 'custom' ) {
+	$template = $template_select;
+} elseif ( $template_select === 'custom' ) {
+	$template_custom = get_field( 'terra_template' );
+	$template        = ! empty( $template_custom ) ? $template_custom : 'template-parts/' . $post_type . '-single-item';
+}
+
+$template_none        = 'template-parts/content-none';
+$template_none_select = get_field( 'terra_template_none_select' );
+if ( $template_none_select && $template_none_select !== 'custom' ) {
+	$template_none = $template_none_select;
+} elseif ( $template_none_select === 'custom' ) {
+	$template_none_custom = get_field( 'terra_template_none' );
+	$template_none        = ! empty( $template_none_custom ) ? $template_none_custom : 'template-parts/content-none';
+}
 
 if ( $sort === 'date' ) {
 	$sort_values = [

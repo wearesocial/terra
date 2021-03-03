@@ -64,6 +64,8 @@ class Terra {
 		add_filter( 'allowed_block_types', [ $this, 'terra_add_allowed_block_type' ], 100, 2 );
 		add_filter( 'acf/load_field/name=terra_post_type', [ $this, 'terra_populate_post_types' ] );
 		add_filter( 'acf/load_field/name=terra_taxonomies', [ $this, 'terra_populate_taxonomies' ] );
+		add_filter( 'acf/load_field/name=terra_template_select', [ $this, 'terra_populate_templates' ] );
+		add_filter( 'acf/load_field/name=terra_template_none_select', [ $this, 'terra_populate_templates' ] );
 	}
 
 	/**
@@ -944,6 +946,33 @@ class Terra {
 				$field['choices'][ $tax ] = $tax;
 			} 
     }
+
+    return $field;
+	}
+
+	/**
+	 * Populate custom select field with templates from theme.
+	 *
+	 * @param array $field the array of field values.
+	 */
+	public function terra_populate_templates( $field ) {
+		$theme_path = get_template_directory();
+
+		// Reset choices.
+    $field['choices'] = [
+			0        => __( 'Default Template', 'stella' ),
+			'custom' => __( 'Custom Template', 'stella' ),
+		];
+    
+    // Get template-parts files.
+		$template_files = glob( $theme_path . '/template-parts/*' );
+
+		//Loop through the array that glob returned.
+		foreach ( $template_files as $filename ) {
+			$filename = str_replace( $theme_path . '/', '', $filename );
+			$filename = str_replace( '.php', '', $filename );
+			$field['choices'][ $filename ] = $filename;
+		}
 
     return $field;
 	}

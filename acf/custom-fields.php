@@ -183,15 +183,45 @@ if ( function_exists('acf_add_local_field_group') ) :
 				'translations' => 'translate',
 			),
 			array(
+				'key' => 'field_603e54eba5aa2',
+				'label' => 'Select Item Template',
+				'name' => 'terra_template_select',
+				'type' => 'select',
+				'instructions' => 'Default template is template-parts/[post-type]-single-item',
+				'required' => 0,
+				'conditional_logic' => 0,
+				'wrapper' => array(
+					'width' => '',
+					'class' => '',
+					'id' => '',
+				),
+				'choices' => array(),
+				'default_value' => false,
+				'allow_null' => 0,
+				'multiple' => 0,
+				'ui' => 0,
+				'return_format' => 'value',
+				'translations' => 'translate',
+				'ajax' => 0,
+				'placeholder' => '',
+			),
+			array(
 				'key' => 'field_5f6de6536c71e',
 				'label' => 'Single Item Template',
 				'name' => 'terra_template',
 				'type' => 'text',
 				'instructions' => 'Override the template item to display each post item.
-	eg: \'template-parts/post-single-item\'
-	(default is template-parts/[post-type]-single-item.php)',
+	eg: \'template-parts/post-single-item\'',
 				'required' => 0,
-				'conditional_logic' => 0,
+				'conditional_logic' => array(
+					array(
+						array(
+							'field' => 'field_603e54eba5aa2',
+							'operator' => '==',
+							'value' => 'custom',
+						),
+					),
+				),
 				'wrapper' => array(
 					'width' => '',
 					'class' => '',
@@ -205,15 +235,45 @@ if ( function_exists('acf_add_local_field_group') ) :
 				'translations' => 'translate',
 			),
 			array(
+				'key' => 'field_603e54eba5ab3',
+				'label' => 'Select No Content Template',
+				'name' => 'terra_template_none_select',
+				'type' => 'select',
+				'instructions' => 'Default template is template-parts/content-none',
+				'required' => 0,
+				'conditional_logic' => 0,
+				'wrapper' => array(
+					'width' => '',
+					'class' => '',
+					'id' => '',
+				),
+				'choices' => array(),
+				'default_value' => false,
+				'allow_null' => 0,
+				'multiple' => 0,
+				'ui' => 0,
+				'return_format' => 'value',
+				'translations' => 'translate',
+				'ajax' => 0,
+				'placeholder' => '',
+			),
+			array(
 				'key' => 'field_5f6de6c46c720',
 				'label' => 'No Content Template',
 				'name' => 'terra_template_none',
 				'type' => 'text',
 				'instructions' => 'Override the template item to display when no posts are found.
-	eg: \'template-parts/content-none\'
-	(default is template-parts/content-none.php)',
+	eg: \'template-parts/content-none\'',
 				'required' => 0,
-				'conditional_logic' => 0,
+				'conditional_logic' => array(
+					array(
+						array(
+							'field' => 'field_603e54eba5ab3',
+							'operator' => '==',
+							'value' => 'custom',
+						),
+					),
+				),
 				'wrapper' => array(
 					'width' => '',
 					'class' => '',

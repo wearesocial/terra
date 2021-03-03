@@ -74,12 +74,12 @@ $terra_args = [
 
 if ( $pre_filtered ) {
 	$taxonomy = get_field( 'terra_taxonomies' );
-	$term     = get_field( 'terra_term' );
+	$term     = get_field( 'terra_term_select' );
 
 	$terra_args['tax_query'] = [
 		[
 			'taxonomy' => $taxonomy,
-			'field'    => 'name',
+			'field'    => 'slug',
 			'terms'    => $term,
 		]
 	];
@@ -125,13 +125,19 @@ $terra_items = new WP_Query( $terra_args );
 						<div class="archive-container__filter-wrap">
 							<label class="archive-container__filter-label" for="filter-<?php echo esc_html( $filter['terra_taxonomies'] ); ?>"><?php echo esc_html( $filter['label'] ); ?></label>
 							<?php
+							$tax_args = [
+								'class'       => 'filter-select archive-container__filter',
+								'placeholder' => esc_html( $filter['placeholder'] ),
+								'hide_empty'  => true,
+							];
+
+							if ( $taxonomy && $term && $taxonomy === $filter['terra_taxonomies'] ) {
+								$tax_args['selected'] = $term;
+							}
+
 							$feed->utils->add_taxonomy_filter(
 								$filter['terra_taxonomies'],
-								[
-									'class'       => 'filter-select archive-container__filter',
-									'placeholder' => esc_html( $filter['placeholder'] ),
-									'hide_empty'  => true,
-								]
+								$tax_args
 							);
 							?>
 						</div>

@@ -64,6 +64,7 @@ class Terra {
 		add_filter( 'allowed_block_types', [ $this, 'terra_add_allowed_block_type' ], 100, 2 );
 		add_filter( 'acf/load_field/name=terra_post_type', [ $this, 'terra_populate_post_types' ] );
 		add_filter( 'acf/load_field/name=terra_taxonomies', [ $this, 'terra_populate_taxonomies' ] );
+		add_filter( 'acf/load_field/name=terra_term_select', [ $this, 'terra_populate_terms' ] );
 		add_filter( 'acf/load_field/name=terra_template_select', [ $this, 'terra_populate_templates' ] );
 		add_filter( 'acf/load_field/name=terra_template_none_select', [ $this, 'terra_populate_templates' ] );
 	}
@@ -886,6 +887,14 @@ class Terra {
 					'post_types' 		  => [ 'page' ],
 					'render_template' => __DIR__ . '/templates/feed-block.php',
 					'category'        => 'widgets',
+					'enqueue_assets'  => function() {
+						if ( is_admin() ) {
+							$url = trailingslashit( str_replace( ABSPATH, site_url( '/' ), __DIR__ ) );
+							// If we're debugging use /src - if production use /dist.
+							$dist = ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || $this->develop ) ? 'src/' : 'dist/';
+							wp_enqueue_script( 'stella-terra-feed', $url . $dist . 'feed-block.js', [ 'jquery' ], TERRA_VERSION, true );
+						}
+					},
 				]
 			);
 		}
@@ -938,7 +947,7 @@ class Terra {
     $field['choices'] = [];
     
     // Get CPTs.
-		$taxonomies = $tax = get_taxonomies( [ 'public' => true ] );
+		$taxonomies = get_taxonomies( [ 'public' => true ] );
 
     // Loop through array and add to field 'choices'.
     if ( is_array( $taxonomies ) ) { 
@@ -946,6 +955,40 @@ class Terra {
 				$field['choices'][ $tax ] = $tax;
 			} 
     }
+
+    return $field;
+	}
+
+	/**
+	 * Populate custom select field with terms.
+	 *
+	 * @param array $field the array of field values.
+	 */
+	public function terra_populate_terms( $field ) {
+		// Reset choices.
+    $field['choices'] = [];
+    
+    // Get CPTs.
+		$taxonomies = get_taxonomies( [ 'public' => true ] );
+		$tax_terms  = [];
+
+    // Loop through array and add to field 'choices'.
+    if ( is_array( $taxonomies ) ) { 
+			foreach ( $taxonomies as $tax ) {
+				$terms = get_terms(
+					[
+						'taxonomy'   => $tax,
+						'hide_empty' => false,
+					]
+				);
+
+				foreach ( $terms as $term ) {
+					$tax_terms[ $tax ][ $term->slug ] = $term->name;
+				}
+			} 
+    }
+
+		$field['choices'] = $tax_terms;
 
     return $field;
 	}

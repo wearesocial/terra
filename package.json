@@ -2,9 +2,14 @@
   "name": "93devs-terra",
   "version": "1.0.0",
   "description": "Terra",
-  "main": "terra.js",
+  "main": "src/terra.js",
   "scripts": {
-    "build": "webpack"
+    "build:js": "parcel build src/terra.js --no-cache --out-file dist/terra.js",
+    "build:block-js": "parcel build src/feed-block.js --no-cache --out-file dist/feed-block.js",
+    "build": "run-s \"build:*\"",
+    "watch:js": "parcel watch src/terra.js --no-cache --out-file dist/terra.js",
+    "watch:block-js": "parcel watch src/feed-block.js --no-cache --out-file dist/feed-block.js",
+    "watch": "run-p \"watch:*\""
   },
   "author": "93digital",
   "license": "MIT",
@@ -14,7 +19,15 @@
     "@babel/register": "^7.0.0",
     "babel-loader": "^8.0.2",
     "markdown-it-container": "^2.0.0",
-    "webpack": "^4.19.1",
-    "webpack-cli": "^3.1.1"
+    "npm-run-all": "^4.1.5",
+    "parcel-bundler": "^1.12.4"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "> 5%",
+    "ie 11"
+  ],
+  "dependencies": {
+    "@wordpress/dom-ready": "^2.12.1"
   }
 }

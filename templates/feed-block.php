@@ -70,7 +70,6 @@ $terra_args = [
 	'terra'          => $name,
 	'orderby'        => $sort === 'disable' ? 'title' : $sort,
 	'order'          => $sort === 'date' ? 'DESC' : 'ASC',
-	'terra-feed'     => true,
 ];
 
 if ( $pre_filtered ) {
@@ -84,6 +83,8 @@ if ( $pre_filtered ) {
 			'terms'    => $term,
 		]
 	];
+
+	$terra_args['terra-feed'] = true;
 }
 
 if ( function_exists( 'pll_current_language' ) ) {

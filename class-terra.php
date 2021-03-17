@@ -543,6 +543,7 @@ class Terra {
 			$args['offset'] = intval( $params['posts-offset'] );
 		}
 
+		// Reset tax query if it's a pre-filtered feed.
 		if ( isset( $args['terra-feed'] ) ) {
 			$args['tax_query'] = [];
 		}

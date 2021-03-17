@@ -14,6 +14,12 @@ From your theme root, run the following command in your terminal to install Terr
 $ composer require 93devs/terra:dev-master
 ```
 
+Or you can add `"93devs/terra": "dev-master"` to your `composer.json` file and run:
+
+```bash
+$ composer update
+```
+
 Then, in your `functions.php` add the following:
 
 ```php
@@ -24,7 +30,7 @@ If you have used Lama for the project you're working on you will need to remove 
 
 ## Development
 
-[npm](https://www.npmjs.com/) is needed to compile the JS file.
+[npm](https://www.npmjs.com/) is needed to compile the JS file (only needed if you've made changes to the JS).
 
 ```bash
 npm install

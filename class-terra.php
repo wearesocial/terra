@@ -881,6 +881,8 @@ class Terra {
 	public function terra_block_init() {
 		// Check function exists.
     if ( function_exists( 'acf_register_block_type' ) ) {
+			$feed_template = apply_filters( 'terra_feed_block_template', __DIR__ . '/templates/feed-block.php' );
+
 			// Register a terra block.
 			acf_register_block_type(
 				[
@@ -888,7 +890,7 @@ class Terra {
 					'title'           => __( 'Terra Feed', 'stella' ),
 					'description'     => __( 'Creates a feed for display of filtered posts.', 'stella' ),
 					'post_types' 		  => [ 'page' ],
-					'render_template' => __DIR__ . '/templates/feed-block.php',
+					'render_template' => $feed_template,
 					'category'        => 'widgets',
 					'enqueue_assets'  => function() {
 						if ( is_admin() ) {

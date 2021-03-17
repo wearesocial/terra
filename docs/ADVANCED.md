@@ -142,3 +142,11 @@ $feed->posts_found(
 // Or just:
 $feed->posts_found();
 ```
+
+## Reset the form
+
+If you want to reset the form data add:
+
+```html
+<input type="reset" value="Reset" />
+```

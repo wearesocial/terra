@@ -297,7 +297,7 @@ class Terra {
 
 			// Need to show the # of posts found?
 			if ( isset( $terra['posts-found'] ) || isset( $params['posts-found'] ) ) {
-				$this->posts_found( $posts );
+				$this->posts_found( $posts, __( 'result', 'stella' ), __( 'results', 'stella' ) );
 			}
 		}
 

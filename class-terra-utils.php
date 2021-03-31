@@ -86,7 +86,10 @@ class Terra_Utils {
 			ob_start();
 			?>
 			<div class="archive-container__filter-wrap">
+				<?php if ( isset( $args['single'] ) ) : ?>
 				<label class="archive-container__label" for="filter-<?php echo esc_html( $tax ); ?>"><?php echo esc_html( $args['single'] ); ?></label>
+				<?php endif; ?>
+
 				<?php
 				$this->add_taxonomy_filter(
 					$tax,

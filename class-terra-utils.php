@@ -455,7 +455,6 @@ class Terra_Utils {
 			if ( ( is_array( $selected ) && in_array( $key, $selected ) ) || ( is_string( $selected ) && $selected == $key ) ) {
 				$checked = ' checked';
 			}
-			error_log( 'CHECKED: ' . $key . ' | ' . print_r( $selected, true ) );
 
 			if ( isset( $args['item_before'] ) ) {
 				echo $args['item_before']; // PHPCS: XSS Ok.

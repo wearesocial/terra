@@ -395,7 +395,7 @@ class Terra_Utils {
 		$selected = '';
 		$filter   = sanitize_title( $filter );
 		if ( isset( $_GET[ $filter_name ] ) ) {
-			$selected = sanitize_title( wp_unslash( $_GET[ $filter_name ] ) );
+			$selected = sanitize_text_field( wp_unslash( $_GET[ $filter_name ] ) );
 		} else {
 			$tax_query = $current_query->get( 'tax_query' );
 
@@ -455,6 +455,7 @@ class Terra_Utils {
 			if ( ( is_array( $selected ) && in_array( $key, $selected ) ) || ( is_string( $selected ) && $selected == $key ) ) {
 				$checked = ' checked';
 			}
+			error_log( 'CHECKED: ' . $key . ' | ' . print_r( $selected, true ) );
 
 			if ( isset( $args['item_before'] ) ) {
 				echo $args['item_before']; // PHPCS: XSS Ok.

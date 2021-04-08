@@ -254,7 +254,7 @@ class Terra {
 					$posts->the_post();
 
 					// Allow 3rd party to inject HTML inside terra's loop.
-					do_action( 'terra_inside_loop__' . $name, $count, get_the_ID(), $params );
+					do_action( 'terra_inside_loop_before__' . $name, $count, get_the_ID(), $params );
 
 					$post_type = get_post_type( get_the_ID() );
 
@@ -269,6 +269,10 @@ class Terra {
 					if ( $post_type !== null ) {
 						get_template_part( $template );
 					}
+
+					// Allow 3rd party to inject HTML inside terra's loop.
+					do_action( 'terra_inside_loop_after__' . $name, $count, get_the_ID(), $params );
+
 					$count++;
 				}
 			} else {

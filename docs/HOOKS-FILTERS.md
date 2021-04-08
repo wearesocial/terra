@@ -182,12 +182,15 @@ add_action( 'terra_before_loop__testname', 'test_before_loop', 10, 3 );
 
 ## Inside the loop
 
-The `terra_inside_loop__[FORM NAME]` filter allows adding 3rd party HTML inside Terra's loop that outputs the single items. The function will be executed before the post template is rendered. This is useful if you want to insert HTML into the middle of the loop at a specific place.
+The `terra_inside_loop_before__[FORM NAME]` action allows adding 3rd party HTML inside Terra's loop that outputs the single items. The function will be executed before the post template is rendered. This is useful if you want to insert HTML into the middle of the loop at a specific place.
+
+Likewise, `terra_inside_loop_after__[FORM NAME]` allows inserting HTML just after the template file is rendered.
 
 ### Usage
 
 ```php
-do_action( 'terra_inside_loop__' . $name, $count, $post_id, $params );
+add_action( 'terra_inside_loop_before__' . $name, $count, $post_id, $params );
+add_action( 'terra_inside_loop_after__' . $name, $count, $post_id, $params );
 ```
 
 ### Example

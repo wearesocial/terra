@@ -189,8 +189,22 @@ Likewise, `terra_inside_loop_after__[FORM NAME]` allows inserting HTML just afte
 ### Usage
 
 ```php
-add_action( 'terra_inside_loop_before__' . $name, $count, $post_id, $params );
-add_action( 'terra_inside_loop_after__' . $name, $count, $post_id, $params );
+// Hook definitions.
+do_action( 'terra_inside_loop_before__' . $name, $count, $post_id, $params, $post_count );
+do_action( 'terra_inside_loop_after__' . $name, $count, $post_id, $params, $post_count );
+
+/**
+ * These functions are invoked inside Terra's loop
+ *
+ * @param int   $count the current post counter.
+ * @param int   $post_id current post ID.
+ * @param array $params the form fields.
+ * @param int   $post_count total posts found.
+ */
+function test_inside_loop_before( $count, $post_id, $params, $post_count ) {
+
+}
+do_action( 'terra_inside_loop_before__testname', 'test_inside_loop_before', 10, 4 );
 ```
 
 ### Example

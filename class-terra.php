@@ -894,7 +894,6 @@ class Terra {
 					'name'            => 'terra-feed',
 					'title'           => __( 'Terra Feed', 'stella' ),
 					'description'     => __( 'Creates a feed for display of filtered posts.', 'stella' ),
-					'post_types' 		  => [ 'page' ],
 					'render_template' => $feed_template,
 					'category'        => 'widgets',
 					'enqueue_assets'  => function() {

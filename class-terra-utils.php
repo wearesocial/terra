@@ -2,7 +2,7 @@
 /**
  * This is a utility class containing tools and helper functions for Terra.
  *
- * @package stella
+ * @package luna
  */
 
 namespace Nine3;
@@ -273,7 +273,7 @@ class Terra_Utils {
 		 * if the the arg is a string then it is used as the option's label.
 		 */
 		if ( $args['clearable'] ) {
-			$label = is_string( $args['clearable'] ) ? $args['clearable'] : __( 'Show all', 'stella' );
+			$label = is_string( $args['clearable'] ) ? $args['clearable'] : __( 'Show all', 'luna' );
 			if ( $args['custom-name'] ) {
 				$args['values'] = [ 'null' => $label ] + $args['values'];
 			} else {

@@ -2,7 +2,7 @@
 /**
  * The template for displaying a Terra Feed block.
  *
- * @package stella
+ * @package luna
  */
 global $terra;
 
@@ -44,18 +44,18 @@ if ( $template_none_select && $template_none_select !== 'custom' ) {
 
 if ( $sort === 'date' ) {
 	$sort_values = [
-		'DESC' => __( 'Newest first', 'stella' ),
-		'ASC'  => __( 'Oldest first', 'stella' ),
+		'DESC' => __( 'Newest first', 'luna' ),
+		'ASC'  => __( 'Oldest first', 'luna' ),
 	];
 } else {
 	$sort_values = [
-		'ASC'  => __( 'A - Z', 'stella' ),
-		'DESC' => __( 'Z - A', 'stella' ),
+		'ASC'  => __( 'A - Z', 'luna' ),
+		'DESC' => __( 'Z - A', 'luna' ),
 	];
 }
 
 if ( $sort === 'menu_order' ) {
-	array_unshift( $sort_values, __( 'Default', 'stella' ) );
+	array_unshift( $sort_values, __( 'Default', 'luna' ) );
 }
 
 if ( $end === 'pagination' ) {
@@ -119,7 +119,7 @@ $terra_items = new WP_Query( $terra_args );
 
 		<?php if ( $filters || $search ) : ?>
 			<header class="archive-container__filters">
-				<h4 class="archive-container__filters--heading"><?php esc_html_e( 'Filter by', 'stella' ); ?></h4>
+				<h4 class="archive-container__filters--heading"><?php esc_html_e( 'Filter by', 'luna' ); ?></h4>
 				<?php
 				if ( $filters ) :
 					foreach ( $filters as $filter ) :
@@ -133,7 +133,7 @@ $terra_items = new WP_Query( $terra_args );
 								'hide_empty'  => true,
 							];
 
-							if ( $taxonomy && $term && $taxonomy === $filter['terra_taxonomies'] ) {
+							if ( isset( $taxonomy ) && $term && $taxonomy === $filter['terra_taxonomies'] ) {
 								$tax_args['selected'] = get_term( $term )->slug;
 							}
 
@@ -150,11 +150,11 @@ $terra_items = new WP_Query( $terra_args );
 				if ( $search ) :
 					?>
 					<div class="archive-container__filter-wrap archive-container__filter-wrap--search">
-						<label class="archive-container__label" for="filter-search"><?php esc_html_e( 'Search', 'stella' ); ?></label>
+						<label class="archive-container__label" for="filter-search"><?php esc_html_e( 'Search', 'luna' ); ?></label>
 						<?php
 						$feed->utils->add_search_filter(
 							[
-								'placeholder' => __( 'Enter search term', 'stella' ),
+								'placeholder' => __( 'Enter search term', 'luna' ),
 								'class'       => 'filter-search archive-container__search',
 							]
 						);
@@ -165,7 +165,7 @@ $terra_items = new WP_Query( $terra_args );
 				?>
 
 				<button type="reset" value="" class="archive-container__reset">
-					<?php esc_html_e( 'Reset', 'stella' ); ?>
+					<?php esc_html_e( 'Reset', 'luna' ); ?>
 				</button>
 			</header>
 		<?php endif; ?>
@@ -186,7 +186,7 @@ $terra_items = new WP_Query( $terra_args );
 					?>
 
 					<div class="archive-sorting__input">
-						<label for="filter-sort"><?php esc_html_e( 'Sort:', 'stella' ); ?></label>
+						<label for="filter-sort"><?php esc_html_e( 'Sort:', 'luna' ); ?></label>
 						<?php
 						$feed->utils->add_dropdown_filter(
 							[

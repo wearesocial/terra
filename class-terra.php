@@ -8,7 +8,7 @@
  * The class needs to be instantiated and globalised in functions.php
  * eg: GLOBALS['terra'] = new \Nine3\Terra( true );
  *
- * @package stella
+ * @package luna
  */
 
 namespace Nine3;
@@ -76,7 +76,7 @@ class Terra {
 		$url = trailingslashit( str_replace( ABSPATH, site_url( '/' ), __DIR__ ) );
 		// If we're debugging use /src - if production use /dist.
 		$dist = ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || $this->develop ) ? 'src/' : 'dist/';
-		wp_register_script( 'stella-terra', $url . $dist . 'terra.js', [ 'jquery' ], TERRA_VERSION, true );
+		wp_register_script( 'luna-terra', $url . $dist . 'terra.js', [ 'jquery' ], TERRA_VERSION, true );
 
 		/**
 		 * To remove the https protocol replace ajaxurl with the following:
@@ -88,7 +88,7 @@ class Terra {
 			'archiveurl' => get_post_type() == 'post' ? get_permalink( get_option( 'page_for_posts' ) ) : get_post_type_archive_link( get_post_type() ),
 		];
 
-		wp_localize_script( 'stella-terra', 'terra', $data );
+		wp_localize_script( 'luna-terra', 'terra', $data );
 	}
 
 	/**
@@ -301,7 +301,7 @@ class Terra {
 
 			// Need to show the # of posts found?
 			if ( isset( $terra['posts-found'] ) || isset( $params['posts-found'] ) ) {
-				$this->posts_found( $posts, __( 'result', 'stella' ), __( 'results', 'stella' ) );
+				$this->posts_found( $posts, __( 'result', 'luna' ), __( 'results', 'luna' ) );
 			}
 		}
 
@@ -774,8 +774,8 @@ class Terra {
 			'current'   => $current_page,
 			'total'     => $total_pages,
 			'type'      => 'list',
-			'prev_text' => esc_html( 'Prev', 'stella' ),
-			'next_text' => esc_html( 'Next', 'stella' ),
+			'prev_text' => esc_html( 'Prev', 'luna' ),
+			'next_text' => esc_html( 'Next', 'luna' ),
 		];
 
 		if ( $multiple ) {
@@ -846,7 +846,7 @@ class Terra {
 		if ( ! empty( $single ) || ! empty( $plural ) ) {
 			$name_string = ( $query->found_posts === 1 ) ? $single : $plural;
 		}
-		$found_string = __( 'Showing', 'stella' ) . " $current-$total " . __( 'of', 'stella' ) . " <strong>$query->found_posts</strong> $name_string";
+		$found_string = __( 'Showing', 'luna' ) . " $current-$total " . __( 'of', 'luna' ) . " <strong>$query->found_posts</strong> $name_string";
 
 		if ( wp_doing_ajax() ) {
 			echo '<terra-posts-found-label>' . $found_string . '</terra-posts-found-label>';
@@ -892,8 +892,8 @@ class Terra {
 			acf_register_block_type(
 				[
 					'name'            => 'terra-feed',
-					'title'           => __( 'Terra Feed', 'stella' ),
-					'description'     => __( 'Creates a feed for display of filtered posts.', 'stella' ),
+					'title'           => __( 'Terra Feed', 'luna' ),
+					'description'     => __( 'Creates a feed for display of filtered posts.', 'luna' ),
 					'render_template' => $feed_template,
 					'category'        => 'widgets',
 					'enqueue_assets'  => function() {
@@ -901,7 +901,7 @@ class Terra {
 							$url = trailingslashit( str_replace( ABSPATH, site_url( '/' ), __DIR__ ) );
 							// If we're debugging use /src - if production use /dist.
 							$dist = ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || $this->develop ) ? 'src/' : 'dist/';
-							wp_enqueue_script( 'stella-terra-feed', $url . $dist . 'feed-block.js', [ 'jquery' ], TERRA_VERSION, true );
+							wp_enqueue_script( 'luna-terra-feed', $url . $dist . 'feed-block.js', [ 'jquery' ], TERRA_VERSION, true );
 						}
 					},
 				]
@@ -1012,8 +1012,8 @@ class Terra {
 
 		// Reset choices.
     $field['choices'] = [
-			0        => __( 'Default Template', 'stella' ),
-			'custom' => __( 'Custom Template', 'stella' ),
+			0        => __( 'Default Template', 'luna' ),
+			'custom' => __( 'Custom Template', 'luna' ),
 		];
     
     // Get template-parts files.

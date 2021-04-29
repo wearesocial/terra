@@ -4,7 +4,7 @@
  * This class is a rewrite of Lama: https://93digital.gitlab.io/lama/
  * This class helps to filter taxonomies via ajax (or XMLHttpRequest..?).
  *
- * @package stella
+ * @package luna
  */
 
 namespace Nine3;
@@ -109,7 +109,7 @@ class Terra_Feed extends Terra {
 	 */
 	public function __construct( $start = false, $options = null ) {
 		// Enqueue the terra.js script.
-		wp_enqueue_script( 'stella-terra' );
+		wp_enqueue_script( 'luna-terra' );
 
 		// Load utils and inject query.
 		$query       = isset( $options['query'] ) ? $options['query'] : null;
@@ -439,7 +439,7 @@ class Terra_Feed extends Terra {
 
 		if ( $load_more ) {
 			if ( $button_label === null ) {
-				$button_label = __( 'LOAD MORE', 'stella' );
+				$button_label = __( 'LOAD MORE', 'luna' );
 			}
 
 			echo '<button type="submit" class="terra-submit" value="load-more">' . esc_html( $button_label ) . '</button>';

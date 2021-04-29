@@ -17,8 +17,8 @@ $args = array_merge(
 	$args,
 	[
 		'mid_size'  => 1,
-		'next_text' => '<span class="screen-reader-text">Next page</span>' . $next_label,
-		'prev_text' => '<span class="screen-reader-text">Previous page</span>' . $prev_label,
+		'next_text' => '<span class="screen-reader-text">Next page</span>',
+		'prev_text' => '<span class="screen-reader-text">Previous page</span>',
 	]
 );
 ?>

@@ -56,6 +56,10 @@ class Terra_Utils {
 		$search = '';
 		if ( ! empty( $_GET['filter-search'] ) ) {
 			$search = sanitize_title( wp_unslash( $_GET['filter-search'] ) );
+		} else {
+			if ( ! empty( $_GET['s'] ) ) {
+				$search = sanitize_title( wp_unslash( $_GET['s'] ) );
+			}
 		}
 		printf(
 			'<input type="search" name="filter-search" value="%s" class="terra-search %s__input" placeholder="%s" data-debouce="%d" />',

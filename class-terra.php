@@ -82,10 +82,14 @@ class Terra {
 		 * To remove the https protocol replace ajaxurl with the following:
 		 * preg_replace( '/https?:\/\//', '//', admin_url( 'admin-ajax.php' ) )
 		 */
+		$archive_url = get_post_type() == 'post' ? get_permalink( get_option( 'page_for_posts' ) ) : get_post_type_archive_link( get_post_type() );
+		if ( is_search() ) {
+			$archive_url = home_url( '/' );
+		}
 		$data = [
 			'ajaxurl'    => admin_url( 'admin-ajax.php' ),
 			'nonce'      => wp_create_nonce( 'terra' ),
-			'archiveurl' => get_post_type() == 'post' ? get_permalink( get_option( 'page_for_posts' ) ) : get_post_type_archive_link( get_post_type() ),
+			'archiveurl' => $archive_url,
 		];
 
 		wp_localize_script( 'luna-terra', 'terra', $data );

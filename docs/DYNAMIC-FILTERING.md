@@ -145,9 +145,9 @@ $feed->utils->add_search_filter(
 
 ## Custom filter
 
-Is possible to use the built-in filter functions to generate [dropdown](#dropdown-example), [checkbox](#checkbox-example) and [radio](#radio-example) inputs by passing custom values.
+Is possible to use the built-in filter functions to generate [dropdown](#7), [checkbox](#9) and [radio](#9) inputs by passing custom values.
 
-- \$args (Array) array of arguments used to style the dropdown - see [add_taxonomy_filter()]() above.
+- \$args (Array) array of arguments used to style the dropdown - see [add_taxonomy_filter()](#1) above.
 
 ### Dropdown example
 

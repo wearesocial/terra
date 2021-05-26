@@ -14,7 +14,7 @@ Once added the block settings on the right hand side will display the following 
 		* Term _(select)_
 
 3. Name _(text field)_
-	- Give the form a custom name to use for Terra's internal functions and filters (see [Hooks & Filters]())
+	- Give the form a custom name to use for Terra's internal functions and filters (see [Hooks & Filters](HOOKS-FILTERS.md))
 	- If left blank defaults to: `[post_type]-feed`
 
 4. Post Type _(select)_

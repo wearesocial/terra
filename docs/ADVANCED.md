@@ -69,7 +69,7 @@ $feed = $terra->create_feed();
 $feed->start( 'custom', 'archive-custom', $posts, $template );
 ```
 
-The default file name can also be overriden using the `terra_template__[name]` filter, more info [here]().
+The default file name can also be overriden using the `terra_template__[name]` filter, more info [here](HOOKS-FILTERS.md#3).
 
 ## Filter taxonomy terms and hide empty
 
@@ -102,7 +102,7 @@ $feed->start( 'custom', 'archive-custom', $posts, $template, $filter_tax );
 ```
 ## Customise the "Load More" button
 
-If you want/need to use a custom **Load more** button, instead of the built-in provided by the [end]() method, add a simple HTML submit button between the `start` (or `create_feed`) and `end` methods.
+If you want/need to use a custom **Load more** button, instead of the built-in one provided by the [end](USAGE.md#7) method, add a simple HTML submit button between the `start` (or `create_feed`) and `end` methods.
 
 ```html
 <!-- Normal input type submit -->

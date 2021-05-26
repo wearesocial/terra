@@ -87,7 +87,7 @@ $options = [
 
 NOTE: The parameter 'terra' => '[FORM_NAME]' is needed to restore the filters used on the page load.
 
-NOTE: The parameter [FORM_NAME] is the name of the form passed to the [Start]() method.
+NOTE: The parameter [FORM_NAME] is the name of the form passed to the [Start](USAGE.md#5) method.
 
 ### Start
 

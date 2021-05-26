@@ -11,7 +11,7 @@ do_action( 'terra_init' );
 do_action( 'terra__[FORM NAME]' );
 ```
 
-**NOTE:** `[FORM NAME]` is the form name specified when calling the [create_feed() or start()]() methods.
+**NOTE:** `[FORM NAME]` is the form name specified when calling the [create_feed() or start()](USAGE.md#3) methods.
 
 ### Temp file
 
@@ -47,7 +47,7 @@ and
 $template = apply_filters( 'terra_template__[FORM NAME]_none', 'template-parts/' . $post_type . '-single-item-none.php', $post_type, $args );
 ```
 
-**NOTE:** `[FORM NAME]` is the form name specified when calling the [create_feed() or start()]() methods.
+**NOTE:** `[FORM NAME]` is the form name specified when calling the [create_feed() or start()](USAGE.md#3) methods.
 
 ### Example
 
@@ -103,7 +103,7 @@ add_filter( 'terra_args', function( array $args, array $params, array $terra_par
 
 **`terra_args__[FORM_NAME]`** is triggered only when:
 
-- passing `'terra' => [FORM_NAME]` parameter to the [custom WP_Query]()
+- passing `'terra' => [FORM_NAME]` parameter to the [custom WP_Query](ADVANCED.md#1)
 - when the `?query=[FORM_NAME]` parameter is present on the page load
 - when performing the AJAX request
 
@@ -277,7 +277,7 @@ apply_filters( 'terra_hidden_field__[FORM_NAME]', $field_value, $field_name );
 
 ## Pagination
 
-Terra has built-in functionality for the pagination, if specifing `true` when [closing the container]().
+Terra has built-in functionality for the pagination, if specifing `true` when [closing the container](USAGE.md#6).
 
 The default template uses the [WP paginate_links](https://codex.wordpress.org/Function_Reference/paginate_links) function, and Terra allows you to customise the arguments sent to this function with the following filters:
 
@@ -341,7 +341,7 @@ jQuery('form.terra').trigger('submit');
 
 ## Feed Block Template
 
-This filter allows the developer to replace the template used to render the [Terra Feed Block](). Default templates is located in `templates/feed-block.php`.
+This filter allows the developer to replace the template used to render the [Terra Feed Block](FEED-BLOCK.md). Default templates is located in `templates/feed-block.php`.
 
 ### Usage
 

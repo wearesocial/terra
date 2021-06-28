@@ -69,9 +69,11 @@ Example with custom query:
 
 ```php
 $posts = new WP_Query(
-  'post_type'   => 'post',
-  'post_status' => 'publish',
-  'terra'       => '[FORM_NAME]', // This parameter is needed!
+  [
+		'post_type'   => 'post',
+		'post_status' => 'publish',
+		'terra'       => '[FORM_NAME]', // This parameter is needed!
+	]
 );
 
 $options = [

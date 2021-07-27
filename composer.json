@@ -16,5 +16,12 @@
 	},
 	"require": {
 		"php": ">=7.2"
-	}
+	},
+	"authors": [
+		{
+			"name": "93digital",
+			"email": "info@93digital.co.uk",
+			"homepage": "https://93digital.co.uk/"
+		}
+	]
 }

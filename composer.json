@@ -5,13 +5,15 @@
 	"minimum-stability": "dev",
 	"homepage": "https://bitbucket.org/vicLobins93/terra/",
 	"license": "MIT",
-	"dist": {
-			"url": "git@bitbucket.org:vicLobins93/terra.git",
-			"type": "git"
-	},
 	"autoload": {
-			"classmap": ["class-terra.php", "class-terra-feed.php", "class-terra-utils.php"],
-			"exclude-from-classmap": ["phpcs.xml"]
+		"classmap": [
+			"class-terra.php",
+			"class-terra-feed.php",
+			"class-terra-utils.php"
+		],
+		"exclude-from-classmap": [
+			"phpcs.xml"
+		]
 	},
 	"require": {
 		"php": ">=7.2"

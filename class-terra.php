@@ -271,7 +271,7 @@ class Terra {
 					self::debug( sprintf( 'Using single template: "%s" for "%s (%d)"', $template, get_the_title(), get_the_ID() ) );
 
 					if ( $post_type !== null ) {
-						get_template_part( $template );
+						get_template_part( $template, '', [ 'count' => $count ] );
 					}
 
 					// Allow 3rd party to inject HTML inside terra's loop.

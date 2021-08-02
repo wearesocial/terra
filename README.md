@@ -1,5 +1,7 @@
 # Terra
 
+***v1.0.1***
+
 Terra is a rewrite of the 93digital [Lama](https://93digital.gitlab.io/lama/) utility class. The class implements _dynamic filtering_ functionality in WordPress and allows users to quickly filter index/archive pages for custom post types using taxonomies and other custom filters.
 
 **NOTE**: php >= 7.2 is required, earlier versions are not supported.

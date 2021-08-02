@@ -3,7 +3,7 @@
 	"description": "This class helps to filter post taxonomies via ajax",
 	"version": "master",
 	"minimum-stability": "dev",
-	"homepage": "https://bitbucket.org/vicLobins93/terra/",
+	"homepage": "https://github.com/93digital/terra",
 	"license": "MIT",
 	"autoload": {
 		"classmap": [

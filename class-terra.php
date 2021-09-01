@@ -540,6 +540,16 @@ class Terra {
 			$args['s'] = $search;
 		}
 
+		// Year?
+		$year = $others['year'] ?? '';
+		if ( ! empty( $year ) ) {
+			$args['date_query'] = [
+				[
+					'year' => $year,
+				]
+			];
+		}
+
 		/**
 		 * Offset conflicts with 'paged', can't use both.
 		 * Also offset have to be used only when clicking the LOAD MORE button.

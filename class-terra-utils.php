@@ -204,7 +204,7 @@ class Terra_Utils {
 			}
 		}
 
-		rsort( $years, SORT_NUMERIC );
+		arsort( $years, SORT_NUMERIC );
 		$args['values'] = $years;
 
 		$this->add_dropdown_filter( $args );

@@ -12,6 +12,7 @@ namespace Nine3;
  * - __construct()
  * - add_search_filter()
  * - add_taxonomy_filter()
+ * - add_year_filter()
  * - add_dropdown_filter()
  * - add_custom_style_filter()
  * - add_radio_or_checkbox_filter()
@@ -168,6 +169,45 @@ class Terra_Utils {
 		} else {
 			throw new \Exception( 'Terra: Unkown style specified for add_taxonomy_filter: ' . $style );
 		}
+	}
+
+	/**
+	 * Adds a filter by year dropdown fore specified post type
+	 *
+	 * @param string $post_type the specified post type.
+	 * @param array  $args the arguments.
+	 */
+	public function add_year_filter( $post_type = '', $args = [] ) {
+		if ( empty( $post_type ) ) {
+			$post_type = $this->current_query->get( 'post_type' );
+			$post_type = ! empty( $post_type ) ? $post_type : 'post';
+		}
+
+		$defaults = [
+			'name' => 'year',
+		];
+		$args = wp_parse_args( $args, $defaults );
+
+		// Set up year values.
+		$post_args = [
+			'post_type'   => $post_type,
+			'post_status' => 'publish',
+			'numberposts' => -1,
+		];
+
+		$posts = get_posts( $post_args );
+		$years = [];
+		foreach ( $posts as $post )  {
+			$year = get_the_date( 'Y' , $post );
+			if ( ! isset( $years[ $year ] ) ) {
+				$years[ $year ] = $year;
+			}
+		}
+
+		rsort( $years, SORT_NUMERIC );
+		$args['values'] = $years;
+
+		$this->add_dropdown_filter( $args );
 	}
 
 	/**

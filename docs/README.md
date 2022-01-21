@@ -30,7 +30,9 @@ If you have used Lama for the project you're working on you will need to remove 
 
 ### Luna
 
-If you're using the new 93digital Luna theme do not add any code to `functions.php`, instead create a new class file in `/inc`, (this is where you will also add any Terra actions or filters) eg:
+Current Luna theme has Terra instantiated by default so you don't need to do anything. If you need to add Terra hooks, the place to do that is: `/inc/hooks/class-luna-terra-hooks.php`
+
+If you're using an older version of Luna which doesn't have Terra bakeed in you will need to create a new class file in `/inc`, (this is where you will also add any Terra actions or filters) eg:
 
 ```php
 class Luna_Terra {

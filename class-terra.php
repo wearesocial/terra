@@ -178,6 +178,7 @@ class Terra {
 
 		if ( ! empty( $args ) ) {
 			$posts = new \WP_Query( $args );
+			$posts = apply_filters( 'terra_query__' . $name, $posts );
 
 			self::debug( $posts->request, '(SQL) ' );
 

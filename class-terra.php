@@ -834,7 +834,7 @@ class Terra {
 		$query_vars = $query->query_vars;
 
 		$page_total = (
-			$query_vars['posts_per_page'] < $query->found_posts
+			$query_vars['posts_per_page'] > 0 && $query_vars['posts_per_page'] < $query->found_posts
 			? $query_vars['posts_per_page']
 			: $query->found_posts
 		);

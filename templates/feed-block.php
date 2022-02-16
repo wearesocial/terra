@@ -11,6 +11,7 @@ $pre_filtered   = get_field( 'terra_pre_filter' );
 $post_type      = get_field( 'terra_post_type' );
 $post_type      = ! empty( $post_type ) ? $post_type : 'post';
 $name           = get_field( 'terra_name' );
+$heading        = get_field( 'terra_heading' );
 $name           = ! empty( $name ) ? $name : $post_type . '-feed';
 $posts_per_page = get_field( 'terra_posts_per_page' );
 $posts_per_page = ! empty( $posts_per_page ) ? $posts_per_page : get_option( 'posts_per_page' );
@@ -119,7 +120,7 @@ $terra_items = new WP_Query( $terra_args );
 
 		<?php if ( $filters || $search ) : ?>
 			<header class="archive-container__filters">
-				<h4 class="archive-container__filters--heading"><?php esc_html_e( 'Filter by', 'luna' ); ?></h4>
+				<h4 class="archive-container__filters--heading"><?php echo esc_html( $heading ); ?></h4>
 				<?php
 				if ( $filters ) :
 					foreach ( $filters as $filter ) :

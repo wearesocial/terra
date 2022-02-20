@@ -310,6 +310,10 @@ function _instanceof(left, right) { if (right != null && typeof Symbol !== "unde
       var element = elements[i];
       var fieldType = element.type.toLowerCase();
 
+      if (element.name == 'posts_per_page' || element.name == 'posts-offset') {
+        continue;
+      }
+
       switch (fieldType) {
         case 'search':
           element.value = '';

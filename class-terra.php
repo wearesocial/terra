@@ -795,6 +795,8 @@ class Terra {
 
 		if ( $multiple ) {
 			$args['add_args'] = [ 'terra' => $current_name ];
+		} else {
+			$args['add_args'] = [ 'terra' => 1 ];
 		}
 
 		$args = apply_filters( 'terra_pagination_args', $args, $show_ends, $params );

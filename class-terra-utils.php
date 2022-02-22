@@ -304,7 +304,8 @@ class Terra_Utils {
 		);
 
 		// The placeholder, if set, is added as disbaled option.
-		if ( ! empty( $args['placeholder'] ) ) {
+		$iphone = stripos( $_SERVER['HTTP_USER_AGENT'], 'iPhone' );
+		if ( ! $iphone && ! empty( $args['placeholder'] ) ) {
 			printf(
 				'<option %s disabled="disabled" style="display: none;">%s</option>',
 				selected( null, $selected, false ),

@@ -390,7 +390,7 @@ class Terra {
 			}
 
 			$args = $this->filter_wp_query( $args, $_GET );
-			$args = apply_filters( 'terra_args__' . $this->current_name, $args, $_GET, [] );
+			$args = apply_filters( 'terra_args__' . $this->current_name, $args, $_GET, $query );
 
 			self::debug( 'Custom $args values:' );
 			self::debug( $args );

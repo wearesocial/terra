@@ -72,8 +72,9 @@ class Terra_Utils {
 
 		if ( isset( $args['icon'] ) ) {
 			printf(
-				'<button class="%s__icon">%s</button>',
+				'<button class="%s__icon" aria-label="%s">%s</button>',
 				esc_html( $args['class'] ),
+				esc_attr( $args['aria-label'] ),
 				$args['icon'] // phpcs:ignore
 			);
 		}
